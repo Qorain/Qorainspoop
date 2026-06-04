@@ -98,6 +98,23 @@ local FullSizeY = 530
 local IsAtBottom = false
 local TargetBangPlayer = nil
 
+-- --- ANTI DISCONNECT / ANTI-AFK SCRIPT ---
+task.spawn(function()
+    local VirtualUser = game:GetService("VirtualUser")
+    local success, err = pcall(function()
+        LocalPlayer.Idled:Connect(function()
+            VirtualUser:Button2Down(Vector2.new(0, 0), Camera.CFrame)
+            task.wait(1)
+            VirtualUser:Button2Up(Vector2.new(0, 0), Camera.CFrame)
+        end)
+    end)
+    if success then
+        print("Anti-AFK (Server Disconnect Protection) aktivoitu onnistuneesti!")
+    else
+        print("Anti-AFK virhe: " .. tostring(err))
+    end
+end)
+
 local ScreenGui = Instance.new("ScreenGui")
 local MainFrame = Instance.new("Frame")
 local Title = Instance.new("TextLabel")
@@ -167,7 +184,7 @@ ScrollFrame.Parent = MainFrame
 ScrollFrame.BackgroundTransparency = 1
 ScrollFrame.Position = UDim2.new(0, 0, 0, 40)
 ScrollFrame.Size = UDim2.new(1, 0, 1, -40)
-ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 1370) -- Kasvatettu canvasia laskinta varten
+ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 1370)
 ScrollFrame.ScrollBarThickness = 6
 ScrollFrame.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
 
@@ -296,7 +313,7 @@ local BangSliderDot = Instance.new("TextButton")
 local BangSliderValueLabel = Instance.new("TextLabel")
 
 BangSliderFrame.Parent = ScrollFrame BangSliderFrame.Size = UDim2.new(0, 180, 0, 50) BangSliderFrame.Position = UDim2.new(0, 10, 0, 825) BangSliderFrame.BackgroundTransparency = 1
-BangSliderValueLabel.Parent = BangSliderFrame BangSliderValueLabel.Size = UDim2.new(1, 0, 0, 20) BangSliderValueLabel.BackgroundTransparency = 1 BangSliderValueLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+BangSliderValueLabel.Parent = BangSliderFrame BangSliderValueLabel.Size = UDim2.new(1, 0, 0, 20) BangSliderValueLabel.BackgroundTransparency = 1 BangSliderValueLabel.TextColor3 = Color3.fromRGB(240, 180, 80)
 BangSliderBar.Parent = BangSliderFrame BangSliderBar.Size = UDim2.new(1, 0, 0, 6) BangSliderBar.Position = UDim2.new(0, 0, 0, 25) BangSliderBar.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
 BangSliderDot.Parent = BangSliderBar BangSliderDot.Size = UDim2.new(0, 16, 0, 16) BangSliderDot.BackgroundColor3 = Color3.fromRGB(240, 180, 80) BangSliderDot.Text = ""
 
@@ -395,7 +412,7 @@ UserInputService.InputEnded:Connect(function(input) if input.UserInputType == En
 UserInputService.InputChanged:Connect(function(input) if sizeDragging and input.UserInputType == Enum.UserInputType.MouseMovement then UpdateSizeSlider(input) end end)
 
 
--- --- UUSI OSIO: LASKIN (CALCULATOR) ---
+-- --- LASKIN (CALCULATOR) ---
 local CalcLabel = Instance.new("TextLabel")
 CalcLabel.Name = "CalcLabel" CalcLabel.Parent = ScrollFrame CalcLabel.Size = UDim2.new(0, 180, 0, 20) CalcLabel.Position = UDim2.new(0, 10, 0, 995)
 CalcLabel.BackgroundTransparency = 1 CalcLabel.Text = "CALCULATOR" CalcLabel.TextColor3 = Color3.fromRGB(255, 255, 255) CalcLabel.TextSize = 12 CalcLabel.Font = Enum.Font.SourceSansBold
@@ -411,13 +428,9 @@ CalcResultLabel.BackgroundColor3 = Color3.fromRGB(25, 25, 25) CalcResultLabel.Ba
 
 local CalcBtn = CreateButton("CalcBtn", "Calculate", UDim2.new(0, 10, 0, 1085), ScrollFrame, Color3.fromRGB(60, 80, 90))
 
--- Laskimen matemaattinen suoritus turvallisesti ilman loadstringiä
 local function SafeCalculate(expression)
-    -- Siivotaan kaikki ylimääräiset merkit paitsi numerot ja matemaattiset operaattorit
     local cleaned = string.gsub(expression, "[^%d%.%+%-%*%/%^%(%)]", "")
     if cleaned == "" then return nil end
-    
-    -- Käytetään anonyymiä funktiota suorittamaan matemaattinen koodi turvallisesti
     local func, err = loadstring("return " .. cleaned)
     if func then
         local success, result = pcall(func)
@@ -438,7 +451,7 @@ CalcBtn.MouseButton1Click:Connect(function()
 end)
 
 
--- Pohjapainikkeet (Siirretty laskimen alapuolelle)
+-- Pohjapainikkeet
 local DisableAllBtn = CreateButton("DisableAllBtn", "Disable All", UDim2.new(0, 10, 0, 1140), ScrollFrame, Color3.fromRGB(120, 40, 40))
 local ShutDownBtn = CreateButton("ShutDownBtn", "Shut Down GUI", UDim2.new(0, 10, 0, 1190), ScrollFrame, Color3.fromRGB(45, 45, 45))
 
