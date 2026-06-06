@@ -109,7 +109,7 @@ task.spawn(function()
         end)
     end)
     if success then
-        print("Anti-AFK (Server Disconnect Protection) aktivoitu onnistuneesti!")
+        print("Anti-AFK aktivoitu!")
     else
         print("Anti-AFK virhe: " .. tostring(err))
     end
@@ -152,9 +152,10 @@ Title.Parent = MainFrame
 Title.Size = UDim2.new(1, 0, 0, 40)
 Title.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 Title.BackgroundTransparency = 0.1
-Title.Text = "MENU"
+Title.Text = "  OG PERSISTENT MENU"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.TextSize = 14
+Title.TextSize = 13
+Title.Font = Enum.Font.SourceSansBold
 Title.TextXAlignment = Enum.TextXAlignment.Left
 
 MinimizeBtn.Name = "MinimizeBtn"
@@ -184,7 +185,7 @@ ScrollFrame.Parent = MainFrame
 ScrollFrame.BackgroundTransparency = 1
 ScrollFrame.Position = UDim2.new(0, 0, 0, 40)
 ScrollFrame.Size = UDim2.new(1, 0, 1, -40)
-ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 1370)
+ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 1260)
 ScrollFrame.ScrollBarThickness = 6
 ScrollFrame.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
 
@@ -192,7 +193,7 @@ local function CreateButton(name, text, pos, parent, color)
     local btn = Instance.new("TextButton")
     btn.Name = name btn.Parent = parent btn.Size = UDim2.new(0, 180, 0, 40) btn.Position = pos
     btn.BackgroundColor3 = color or Color3.fromRGB(60, 60, 60) btn.BackgroundTransparency = 0.1
-    btn.Text = text btn.TextColor3 = Color3.fromRGB(255, 255, 255) btn.TextSize = 14
+    btn.Text = text btn.TextColor3 = Color3.fromRGB(255, 255, 255) btn.TextSize = 13 btn.Font = Enum.Font.SourceSansBold
     return btn
 end
 
@@ -220,7 +221,6 @@ local BangBtn = CreateButton("BangBtn", "Bang Player", UDim2.new(0, 10, 0, 465),
 local TPToMeBtn = CreateButton("TPToMeBtn", "TP to Me", UDim2.new(0, 10, 0, 510), ScrollFrame, Color3.fromRGB(40, 80, 110))
 local TPToThemBtn = CreateButton("TPToThemBtn", "TP to Them", UDim2.new(0, 10, 0, 555), ScrollFrame, Color3.fromRGB(90, 40, 110))
 local UnweldBtn = CreateButton("UnweldBtn", "Stop Weld / Bang", UDim2.new(0, 10, 0, 600), ScrollFrame, Color3.fromRGB(100, 40, 40))
-
 
 -- --- SLIDERIT ---
 local SliderFrame = Instance.new("Frame")
@@ -250,7 +250,6 @@ SliderDot.InputBegan:Connect(function(input) if input.UserInputType == Enum.User
 UserInputService.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end end)
 UserInputService.InputChanged:Connect(function(input) if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then UpdateSlider(input) end end)
 
-
 local WSliderFrame = Instance.new("Frame")
 local WSliderBar = Instance.new("Frame")
 local WSliderDot = Instance.new("TextButton")
@@ -277,7 +276,6 @@ end
 WSliderDot.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then wDragging = true end end)
 UserInputService.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then wDragging = false end end)
 UserInputService.InputChanged:Connect(function(input) if wDragging and input.UserInputType == Enum.UserInputType.MouseMovement then UpdateWalkSlider(input) end end)
-
 
 local JSliderFrame = Instance.new("Frame")
 local JSliderBar = Instance.new("Frame")
@@ -306,7 +304,6 @@ JSliderDot.InputBegan:Connect(function(input) if input.UserInputType == Enum.Use
 UserInputService.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then jDragging = false end end)
 UserInputService.InputChanged:Connect(function(input) if jDragging and input.UserInputType == Enum.UserInputType.MouseMovement then UpdateJumpSlider(input) end end)
 
-
 local BangSliderFrame = Instance.new("Frame")
 local BangSliderBar = Instance.new("Frame")
 local BangSliderDot = Instance.new("TextButton")
@@ -333,7 +330,6 @@ end
 BangSliderDot.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then bangDragging = true end end)
 UserInputService.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then bangDragging = false end end)
 UserInputService.InputChanged:Connect(function(input) if bangDragging and input.UserInputType == Enum.UserInputType.MouseMovement then UpdateBangSlider(input) end end)
-
 
 local SSliderFrame = Instance.new("Frame")
 local SSliderBar = Instance.new("Frame")
@@ -365,7 +361,6 @@ end
 SSliderDot.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then sDragging = true end end)
 UserInputService.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then sDragging = false end end)
 UserInputService.InputChanged:Connect(function(input) if sDragging and input.UserInputType == Enum.UserInputType.MouseMovement then UpdateSpinSlider(input) end end)
-
 
 local SizeSliderFrame = Instance.new("Frame")
 local SizeSliderBar = Instance.new("Frame")
@@ -601,63 +596,65 @@ local function UpdateSpinbotState()
     else RemoveSpin() end
 end
 
-local function ToggleESP() Settings.ESP = not Settings.ESP UpdateTexts() end
-local function ToggleNoclip() Settings.Noclip = not Settings.Noclip UpdateTexts() end
-local function ToggleAimbot() Settings.Aimbot = not Settings.Aimbot UpdateTexts() end
-local function ToggleSpin() Settings.Spin = not Settings.Spin UpdateTexts() UpdateSpinbotState() end
-local function ToggleWalkSpeed() Settings.WalkSpeedToggle = not Settings.WalkSpeedToggle UpdateTexts() end
-local function ToggleJumpPower() Settings.JumpPowerToggle = not Settings.JumpPowerToggle UpdateTexts() end
+-- --- TOGGLE-FUNKTIOT JA KORJAUKSET ---
+local function CreateHighlight(char)
+    if not char then return end
+    local old = char:FindFirstChild("OG_Menu_ESP")
+    if old then old:Destroy() end
+    if Settings.ESP and char ~= LocalPlayer.Character then
+        local hl = Instance.new("Highlight")
+        hl.Name = "OG_Menu_ESP"
+        hl.FillColor = Color3.fromRGB(255, 0, 50)
+        hl.OutlineColor = Color3.fromRGB(255, 255, 255)
+        hl.Parent = char
+    end
+end
+
+local function ToggleESP()
+    Settings.ESP = not Settings.ESP
+    UpdateTexts()
+    for _, p in pairs(Players:GetPlayers()) do
+        if p.Character then
+            if Settings.ESP then CreateHighlight(p.Character) else
+                local hl = p.Character:FindFirstChild("OG_Menu_ESP")
+                if hl then hl:Destroy() end
+            end
+        end
+    end
+end
+
+local function ToggleNoclip()
+    Settings.Noclip = not Settings.Noclip
+    UpdateTexts()
+end
+
+local function ToggleAimbot()
+    Settings.Aimbot = not Settings.Aimbot
+    UpdateTexts()
+end
 
 local function ToggleFlight()
-    Settings.Flight = not Settings.Flight UpdateTexts()
-    if Settings.Flight then
-        task.spawn(function()
-            while Settings.Flight and IsRunning and task.wait() do
-                if LocalPlayer.Character then
-                    local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-                    local targetPart = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-                    if humanoid and humanoid.SeatPart and humanoid.SeatPart:IsA("BasePart") then targetPart = humanoid.SeatPart end
-                    if targetPart then
-                        local moveDir = Vector3.new(0,0,0)
-                        if UserInputService:IsKeyDown(Enum.KeyCode.W) then moveDir = moveDir + Camera.CFrame.LookVector end
-                        if UserInputService:IsKeyDown(Enum.KeyCode.S) then moveDir = moveDir - Camera.CFrame.LookVector end
-                        if UserInputService:IsKeyDown(Enum.KeyCode.A) then moveDir = moveDir - Camera.CFrame.RightVector end
-                        if UserInputService:IsKeyDown(Enum.KeyCode.D) then moveDir = moveDir + Camera.CFrame.RightVector end
-                        if moveDir.Magnitude > 0 then targetPart.CFrame = targetPart.CFrame + (moveDir.Unit * (Settings.FlightSpeed / 10)) end
-                        targetPart.AssemblyLinearVelocity = Vector3.new(0,0,0) targetPart.AssemblyAngularVelocity = Vector3.new(0,0,0)
-                    end
-                end
-            end
-        end)
-    end
+    Settings.Flight = not Settings.Flight
+    UpdateTexts()
 end
 
-local function DisableAll()
-    Settings.ESP = false Settings.Noclip = false Settings.Aimbot = false Settings.Flight = false Settings.Spin = false Settings.WalkSpeedToggle = false Settings.JumpPowerToggle = false
-    Settings.WalkSpeed = 16 Settings.JumpPower = 50 Settings.BangSpeed = 20 Settings.CharacterScale = 1
-    RemoveSpin() UnweldPlayer() UpdateCharacterScale()
-    if LocalPlayer.Character then
-        local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-        if humanoid then humanoid.UseJumpPower = true humanoid.JumpPower = 50 end
-    end
-    for _, player in pairs(Players:GetPlayers()) do
-        if player.Character then local highlight = player.Character:FindFirstChildOfClass("Highlight") if highlight then highlight:Destroy() end end
-    end
-    if IsRunning then
-        WSliderDot.Position = UDim2.new(0, -8, 0.5, -8) WSliderValueLabel.Text = "Walk Speed: 16"
-        JSliderDot.Position = UDim2.new(0, -8, 0.5, -8) JSliderValueLabel.Text = "Jump Power: 50"
-        BangSliderDot.Position = UDim2.new(0.333, -8, 0.5, -8) BangSliderValueLabel.Text = "Bang Speed: 20"
-        SizeSliderDot.Position = UDim2.new(0.111, -8, 0.5, -8) SizeSliderValueLabel.Text = "Character Scale: 1.0x"
-        CalcTextBox.Text = "" CalcResultLabel.Text = "Result: -" CalcResultLabel.TextColor3 = Color3.fromRGB(150, 255, 150)
-        UpdateTexts()
-    end
+local function ToggleSpin()
+    Settings.Spin = not Settings.Spin
+    UpdateTexts()
+    UpdateSpinbotState()
 end
 
-local function ShutDownGUI()
-    IsRunning = false for _, connection in pairs(Connections) do if connection then connection:Disconnect() end end
-    DisableAll() ScreenGui:Destroy()
+local function ToggleWalkSpeed()
+    Settings.WalkSpeedToggle = not Settings.WalkSpeedToggle
+    UpdateTexts()
 end
 
+local function ToggleJumpPower()
+    Settings.JumpPowerToggle = not Settings.JumpPowerToggle
+    UpdateTexts()
+end
+
+-- Liitetään GUI-painikkeet funktioihin
 ESPBtn.MouseButton1Click:Connect(ToggleESP)
 NoclipBtn.MouseButton1Click:Connect(ToggleNoclip)
 AimbotBtn.MouseButton1Click:Connect(ToggleAimbot)
@@ -665,118 +662,104 @@ FlightBtn.MouseButton1Click:Connect(ToggleFlight)
 SpinBtn.MouseButton1Click:Connect(ToggleSpin)
 WalkToggleBtn.MouseButton1Click:Connect(ToggleWalkSpeed)
 JumpToggleBtn.MouseButton1Click:Connect(ToggleJumpPower)
+
 WeldBtn.MouseButton1Click:Connect(WeldToMe)
 BangBtn.MouseButton1Click:Connect(BangPlayer)
 TPToMeBtn.MouseButton1Click:Connect(TeleportPlayerToMe)
 TPToThemBtn.MouseButton1Click:Connect(TeleportMeToPlayer)
 UnweldBtn.MouseButton1Click:Connect(UnweldPlayer)
-DisableAllBtn.MouseButton1Click:Connect(DisableAll)
-ShutDownBtn.MouseButton1Click:Connect(ShutDownGUI)
 
-local listeningForBind = nil
-local function RegisterBindChange(button, feature)
-    button.MouseButton2Click:Connect(function() button.Text = "Paina näppäintä..." listeningForBind = feature end)
-end
-RegisterBindChange(ESPBtn, "ESP") RegisterBindChange(NoclipBtn, "Noclip") RegisterBindChange(AimbotBtn, "Aimbot") RegisterBindChange(FlightBtn, "Flight") RegisterBindChange(SpinBtn, "Spin") RegisterBindChange(WalkToggleBtn, "WalkSpeedToggle") RegisterBindChange(JumpToggleBtn, "JumpPowerToggle")
-
-local function CheckBind(feature, input)
-    local expected = GetUserInputTypeOrKeyCode(feature) if not expected then return false end
-    if expected.ClassName == "UserInputType" then return input.UserInputType == expected else return input.KeyCode == expected end
-end
-
-table.insert(Connections, UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if input.UserInputType == Enum.UserInputType.MouseButton3 and not listeningForBind then
-        IsAtBottom = not IsAtBottom
-        if IsAtBottom then
-            local currentHeight = IsMinimized and 40 or FullSizeY
-            MainFrame.Position = UDim2.new(MainFrame.Position.X.Scale, MainFrame.Position.X.Offset, 1, -currentHeight - 40)
-        else MainFrame.Position = UDim2.new(MainFrame.Position.X.Scale, MainFrame.Position.X.Offset, 0.1, 0) end
-        return
+DisableAllBtn.MouseButton1Click:Connect(function()
+    Settings.ESP = false Settings.Noclip = false Settings.Aimbot = false
+    Settings.Flight = false Settings.Spin = false Settings.WalkSpeedToggle = false
+    Settings.JumpPowerToggle = false
+    UnweldPlayer() RemoveSpin() UpdateTexts()
+    for _, p in pairs(Players:GetPlayers()) do
+        if p.Character then local hl = p.Character:FindFirstChild("OG_Menu_ESP") if hl then hl:Destroy() end end
     end
-    if gameProcessed then return end
-    if listeningForBind then
-        if input.UserInputType == Enum.UserInputType.Keyboard then
-            if input.KeyCode == Enum.KeyCode.Backspace then Settings.Binds[listeningForBind] = "None" else Settings.Binds[listeningForBind] = input.KeyCode.Name end
-            listeningForBind = nil UpdateTexts() SaveSettings() return
-        elseif input.UserInputType == Enum.UserInputType.MouseButton3 then
-            Settings.Binds[listeningForBind] = "MouseButton3" listeningForBind = nil UpdateTexts() SaveSettings() return
-        end
-    end
-    if CheckBind("ESP", input) then ToggleESP() end
-    if CheckBind("Noclip", input) then ToggleNoclip() end
-    if CheckBind("Aimbot", input) then ToggleAimbot() end
-    if CheckBind("Flight", input) then ToggleFlight() end
-    if CheckBind("Spin", input) then ToggleSpin() end
-    if CheckBind("WalkSpeedToggle", input) then ToggleWalkSpeed() end
-    if CheckBind("JumpPowerToggle", input) then ToggleJumpPower() end
-end))
+end)
 
-table.insert(Connections, LocalPlayer.CharacterAdded:Connect(function() task.wait(0.5) if IsRunning then UpdateSpinbotState() UpdateCharacterScale() end end))
+ShutDownBtn.MouseButton1Click:Connect(function()
+    IsRunning = false
+    RemoveSpin() UnweldPlayer()
+    for _, c in pairs(Connections) do c:Disconnect() end
+    ScreenGui:Destroy()
+end)
 
-table.insert(Connections, RunService.RenderStepped:Connect(function()
-    if IsRunning and LocalPlayer.Character then
-        local myHRP = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-        local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-        if humanoid then
-            local targetSpeed = Settings.WalkSpeedToggle and Settings.WalkSpeed or 16
-            if humanoid.WalkSpeed ~= targetSpeed then humanoid.WalkSpeed = targetSpeed end
-            humanoid.UseJumpPower = true
-            local targetJump = Settings.JumpPowerToggle and Settings.JumpPower or 50
-            if humanoid.JumpPower ~= targetJump then humanoid.JumpPower = targetJump end
-        end
-        if Settings.BangActive and TargetBangPlayer and TargetBangPlayer.Character then
-            local targetHRP = TargetBangPlayer.Character:FindFirstChild("HumanoidRootPart")
-            if targetHRP and myHRP then local timeScale = tick() * Settings.BangSpeed local moveOffset = math.sin(timeScale) * 6 myHRP.CFrame = targetHRP.CFrame * CFrame.new(0, 0, 1.5 + moveOffset) end
-        elseif Settings.BangActive then UnweldPlayer() end
-        if Settings.Spin and not SpinBodyAngularVelocity then UpdateSpinbotState() end
-    end
-end))
-
+-- --- FYSIKKA / STEPPED / LOOPI ---
+-- STEPPED-LOOPI KORJAA NOCLIPIN, KOSKA SE AJETAAN ENNEN PHYSICS-LASKUJA
 table.insert(Connections, RunService.Stepped:Connect(function()
-    if (Settings.Noclip or Settings.BangActive) and IsRunning and LocalPlayer.Character then
-        for _, part in pairs(LocalPlayer.Character:GetChildren()) do if part:IsA("BasePart") then part.CanCollide = false end end
-    end
-end))
-
-local function IsVisible(targetPart)
-    local character = LocalPlayer.Character if not character then return false end
-    local raycastParams = RaycastParams.new()
-    raycastParams.FilterType = Enum.RaycastFilterType.Exclude raycastParams.FilterDescendantsInstances = {character, targetPart.Parent}
-    local ray = workspace:Raycast(Camera.CFrame.Position, targetPart.Position - Camera.CFrame.Position, raycastParams)
-    return ray == nil
-end
-
-table.insert(Connections, RunService.RenderStepped:Connect(function()
     if not IsRunning then return end
-    for _, player in pairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Character then
-            local highlight = player.Character:FindFirstChildOfClass("Highlight")
-            if Settings.ESP then
-                if not highlight then highlight = Instance.new("Highlight", player.Character) highlight.FillColor = Color3.fromRGB(255, 0, 0) end
-            else if highlight then highlight:Destroy() end end
-        end
-    end
-end))
-
-local function GetClosestPlayer()
-    local closest, shortest = nil, math.huge
-    for _, player in pairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
-            local head = player.Character:FindFirstChild("Head")
-            if head and IsVisible(head) then
-                local pos, onScreen = Camera:WorldToViewportPoint(head.Position)
-                if onScreen then
-                    local dist = (Vector2.new(pos.X, pos.Y) - UserInputService:GetMouseLocation()).Magnitude
-                    if dist < shortest then closest = head shortest = dist end
+    local char = LocalPlayer.Character
+    local humanoid = char and char:FindFirstChildOfClass("Humanoid")
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    
+    -- NOCLIP-KORJAUS (Sammuttaa noclipin välittömästi ilman resettiä)
+    if char then
+        for _, part in pairs(char:GetDescendants()) do
+            if part:IsA("BasePart") then
+                if Settings.Noclip then
+                    part.CanCollide = false
+                else
+                    if part.Name ~= "HumanoidRootPart" then
+                        part.CanCollide = true
+                    end
                 end
             end
         end
+        if not Settings.Noclip and humanoid then
+            if humanoid:GetState() ~= Enum.HumanoidStateType.Running and humanoid:GetState() ~= Enum.HumanoidStateType.Dead then
+                humanoid:ChangeState(Enum.HumanoidStateType.Running)
+            end
+        end
     end
-    return closest
-end
-
-table.insert(Connections, RunService.RenderStepped:Connect(function()
-    if Settings.Aimbot and IsRunning then local t = GetClosestPlayer() if t then Camera.CFrame = CFrame.new(Camera.CFrame.Position, t.Position) end end
+    
+    -- FLIGHT LOGIIKKA
+    if Settings.Flight and hrp and humanoid then
+        local moveDir = humanoid.MoveDirection
+        local flyVel = Vector3.new(0, 0, 0)
+        if UserInputService:IsKeyDown(Enum.KeyCode.Space) then
+            flyVel = flyVel + Vector3.new(0, Settings.FlightSpeed, 0)
+        elseif UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then
+            flyVel = flyVel - Vector3.new(0, Settings.FlightSpeed, 0)
+        end
+        hrp.Velocity = (moveDir * Settings.FlightSpeed) + flyVel
+        humanoid:ChangeState(Enum.HumanoidStateType.Freefall)
+    end
+    
+    -- WALKSPEED / JUMPPOWER YLLÄPITO
+    if humanoid then
+        if Settings.WalkSpeedToggle then humanoid.WalkSpeed = Settings.WalkSpeed end
+        if Settings.JumpPowerToggle then humanoid.JumpPower = Settings.JumpPower end
+    end
+    
+    -- BANG PLAYER LOGIIKKA
+    if Settings.BangActive and TargetBangPlayer and TargetBangPlayer.Character and TargetBangPlayer.Character:FindFirstChild("HumanoidRootPart") and hrp then
+        local targetHRP = TargetBangPlayer.Character.HumanoidRootPart
+        local bangAnim = math.sin(tick() * Settings.BangSpeed) * 2
+        hrp.CFrame = targetHRP.CFrame * CFrame.new(0, 0, 1 + bangAnim)
+    elseif Settings.BangActive then
+        UnweldPlayer()
+    end
 end))
 
-task.spawn(UpdateCharacterScale)
+-- SEURATAAN UUSIA PELAAJIA ESP-VARTEN
+Players.PlayerAdded:Connect(function(p)
+    p.CharacterAdded:Connect(function(c)
+        task.wait(0.5)
+        if Settings.ESP then CreateHighlight(c) end
+    end)
+end)
+
+-- --- KEYBIND TUNNISTUS ---
+table.insert(Connections, UserInputService.InputBegan:Connect(function(input, gpe)
+    if gpe then return end
+    if input.KeyCode == GetUserInputTypeOrKeyCode("ESP") or input.UserInputType == GetUserInputTypeOrKeyCode("ESP") then ToggleESP()
+    elseif input.KeyCode == GetUserInputTypeOrKeyCode("Noclip") or input.UserInputType == GetUserInputTypeOrKeyCode("Noclip") then ToggleNoclip()
+    elseif input.KeyCode == GetUserInputTypeOrKeyCode("Aimbot") or input.UserInputType == GetUserInputTypeOrKeyCode("Aimbot") then ToggleAimbot()
+    elseif input.KeyCode == GetUserInputTypeOrKeyCode("Flight") or input.UserInputType == GetUserInputTypeOrKeyCode("Flight") then ToggleFlight()
+    elseif input.KeyCode == GetUserInputTypeOrKeyCode("Spin") or input.UserInputType == GetUserInputTypeOrKeyCode("Spin") then ToggleSpin()
+    elseif input.KeyCode == GetUserInputTypeOrKeyCode("WalkSpeedToggle") or input.UserInputType == GetUserInputTypeOrKeyCode("WalkSpeedToggle") then ToggleWalkSpeed()
+    elseif input.KeyCode == GetUserInputTypeOrKeyCode("JumpPowerToggle") or input.UserInputType == GetUserInputTypeOrKeyCode("JumpPowerToggle") then ToggleJumpPower()
+    end
+end))
