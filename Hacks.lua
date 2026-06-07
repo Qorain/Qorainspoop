@@ -155,7 +155,7 @@ Title.Parent = MainFrame
 Title.Size = UDim2.new(1, 0, 0, 40)
 Title.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 Title.BackgroundTransparency = 0.1
-Title.Text = "  OG PERSISTENT MENU"
+Title.Text = "  Paskaclient"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.TextSize = 13
 Title.Font = Enum.Font.SourceSansBold
@@ -247,7 +247,7 @@ local function UpdateSlider(input)
     local relativeX = input.Position.X - SliderBar.AbsolutePosition.X
     local percentage = math.clamp(relativeX / SliderBar.AbsoluteSize.X, 0, 1)
     SliderDot.Position = UDim2.new(percentage, -8, 0.5, -8)
-    Settings.FlightSpeed = math.floor(10 + (percentage * 240))
+    Settings.FlightSpeed = math.floor(10 + (percentage * 1000))
     SliderValueLabel.Text = "Fly Speed: " .. Settings.FlightSpeed
     SaveSettings()
 end
@@ -274,7 +274,7 @@ local function UpdateWalkSlider(input)
     local relativeX = input.Position.X - WSliderBar.AbsolutePosition.X
     local percentage = math.clamp(relativeX / WSliderBar.AbsoluteSize.X, 0, 1)
     WSliderDot.Position = UDim2.new(percentage, -8, 0.5, -8)
-    Settings.WalkSpeed = math.floor(16 + (percentage * 234))
+    Settings.WalkSpeed = math.floor(16 + (percentage * 100))
     WSliderValueLabel.Text = "Walk Speed: " .. Settings.WalkSpeed
     SaveSettings()
 end
@@ -301,7 +301,7 @@ local function UpdateJumpSlider(input)
     local relativeX = input.Position.X - JSliderBar.AbsolutePosition.X
     local percentage = math.clamp(relativeX / JSliderBar.AbsoluteSize.X, 0, 1)
     JSliderDot.Position = UDim2.new(percentage, -8, 0.5, -8)
-    Settings.JumpPower = math.floor(50 + (percentage * 450))
+    Settings.JumpPower = math.floor(50 + (percentage * 1000))
     JSliderValueLabel.Text = "Jump Power: " .. Settings.JumpPower
     SaveSettings()
 end
@@ -328,7 +328,7 @@ local function UpdateBangSlider(input)
     local relativeX = input.Position.X - BangSliderBar.AbsolutePosition.X
     local percentage = math.clamp(relativeX / BangSliderBar.AbsoluteSize.X, 0, 1)
     BangSliderDot.Position = UDim2.new(percentage, -8, 0.5, -8)
-    Settings.BangSpeed = math.floor(5 + (percentage * 45))
+    Settings.BangSpeed = math.floor(5 + (percentage * 1000))
     BangSliderValueLabel.Text = "Bang Speed: " .. Settings.BangSpeed
     SaveSettings()
 end
