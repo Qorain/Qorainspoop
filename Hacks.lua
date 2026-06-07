@@ -274,7 +274,7 @@ local function UpdateWalkSlider(input)
     local relativeX = input.Position.X - WSliderBar.AbsolutePosition.X
     local percentage = math.clamp(relativeX / WSliderBar.AbsoluteSize.X, 0, 1)
     WSliderDot.Position = UDim2.new(percentage, -8, 0.5, -8)
-    Settings.WalkSpeed = math.floor(16 + (percentage * 10000000))
+    Settings.WalkSpeed = math.floor(1 + (percentage * 1000))
     WSliderValueLabel.Text = "Walk Speed: " .. Settings.WalkSpeed
     SaveSettings()
 end
