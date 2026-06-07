@@ -355,7 +355,7 @@ local function UpdateSpinSlider(input)
     local relativeX = input.Position.X - SSliderBar.AbsolutePosition.X
     local percentage = math.clamp(relativeX / SSliderBar.AbsoluteSize.X, 0, 1)
     SSliderDot.Position = UDim2.new(percentage, -8, 0.5, -8)
-    Settings.SpinSpeed = math.floor(10 + (percentage * 2490))
+    Settings.SpinSpeed = math.floor(10 + (percentage * 24900))
     SSliderValueLabel.Text = "Spin Speed: " .. Settings.SpinSpeed
     
     if Settings.Spin and SpinBodyAngularVelocity then
