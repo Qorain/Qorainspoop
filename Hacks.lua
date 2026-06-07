@@ -16,8 +16,9 @@ local Settings = {
     Spin = false,
     WalkSpeedToggle = false,
     JumpPowerToggle = false,
+    TPTool = false,
+    Invisible = false,
     BangActive = false,
-    Invisibility = false, -- Muskahub: Näkymättömyyden tila
     FlightSpeed = 50,
     WalkSpeed = 16,
     JumpPower = 50,
@@ -31,7 +32,9 @@ local Settings = {
         Flight = "G",
         Spin = "H",
         WalkSpeedToggle = "J",
-        JumpPowerToggle = "K"
+        JumpPowerToggle = "K",
+        TPTool = "T",
+        Invisible = "N"
     }
 }
 
@@ -95,8 +98,10 @@ local SpinBodyAngularVelocity = nil
 local SpinBlockForce = nil
 local CurrentWeld = nil 
 local IsMinimized = false
-local FullSizeY = 620 -- Kasvatettu kokoa, jotta uudet napit mahtuvat
+local FullSizeY = 530
+local IsAtBottom = false
 local TargetBangPlayer = nil
+local RealCharacterCF = nil
 
 -- --- ANTI DISCONNECT / ANTI-AFK SCRIPT ---
 task.spawn(function()
@@ -152,7 +157,7 @@ Title.Parent = MainFrame
 Title.Size = UDim2.new(1, 0, 0, 40)
 Title.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 Title.BackgroundTransparency = 0.1
-Title.Text = "  MUSKAHUB EXTENDED"
+Title.Text = "  OG PERSISTENT MENU"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.TextSize = 13
 Title.Font = Enum.Font.SourceSansBold
@@ -185,7 +190,7 @@ ScrollFrame.Parent = MainFrame
 ScrollFrame.BackgroundTransparency = 1
 ScrollFrame.Position = UDim2.new(0, 0, 0, 40)
 ScrollFrame.Size = UDim2.new(1, 0, 1, -40)
-ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 1360) -- Kasvatettu tilaa
+ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 1360) -- Nostettu kokoa uusille napeille
 ScrollFrame.ScrollBarThickness = 6
 ScrollFrame.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
 
@@ -197,7 +202,7 @@ local function CreateButton(name, text, pos, parent, color)
     return btn
 end
 
--- Painikkeet (Alkuperäiset)
+-- Painikkeet
 local ESPBtn = CreateButton("ESPBtn", "", UDim2.new(0, 10, 0, 10), ScrollFrame)
 local NoclipBtn = CreateButton("NoclipBtn", "", UDim2.new(0, 10, 0, 60), ScrollFrame)
 local AimbotBtn = CreateButton("AimbotBtn", "", UDim2.new(0, 10, 0, 110), ScrollFrame)
@@ -205,40 +210,32 @@ local FlightBtn = CreateButton("FlightBtn", "", UDim2.new(0, 10, 0, 160), Scroll
 local SpinBtn = CreateButton("SpinBtn", "", UDim2.new(0, 10, 0, 210), ScrollFrame)
 local WalkToggleBtn = CreateButton("WalkToggleBtn", "", UDim2.new(0, 10, 0, 260), ScrollFrame)
 local JumpToggleBtn = CreateButton("JumpToggleBtn", "", UDim2.new(0, 10, 0, 310), ScrollFrame)
-
--- --- MUSKAHUB EXTRA OMINAISUUDET ---
-local MuskahubLabel = Instance.new("TextLabel")
-MuskahubLabel.Name = "MuskahubLabel" MuskahubLabel.Parent = ScrollFrame MuskahubLabel.Size = UDim2.new(0, 180, 0, 20) MuskahubLabel.Position = UDim2.new(0, 10, 0, 360)
-MuskahubLabel.BackgroundTransparency = 1 MuskahubLabel.Text = "MUSKAHUB FEATURES" MuskahubLabel.TextColor3 = Color3.fromRGB(230, 126, 34) MuskahubLabel.TextSize = 12 MuskahubLabel.Font = Enum.Font.SourceSansBold
-
-local InvisBtn = CreateButton("InvisBtn", "Invisibility: OFF", UDim2.new(0, 10, 0, 385), ScrollFrame, Color3.fromRGB(70, 50, 90))
-local TPToolBtn = CreateButton("TPToolBtn", "Get TP Tool", UDim2.new(0, 10, 0, 435), ScrollFrame, Color3.fromRGB(50, 80, 90))
+local TPToolBtn = CreateButton("TPToolBtn", "", UDim2.new(0, 10, 0, 360), ScrollFrame, Color3.fromRGB(50, 80, 120))
+local InvisibleBtn = CreateButton("InvisibleBtn", "", UDim2.new(0, 10, 0, 410), ScrollFrame, Color3.fromRGB(100, 60, 110))
 
 -- --- PLAYER INTERACTIONS (Siirretty alemmas uusien nappien tieltä) ---
-local PointY = 495
 local WeldLabel = Instance.new("TextLabel")
-WeldLabel.Name = "WeldLabel" WeldLabel.Parent = ScrollFrame WeldLabel.Size = UDim2.new(0, 180, 0, 20) WeldLabel.Position = UDim2.new(0, 10, 0, PointY)
+WeldLabel.Name = "WeldLabel" WeldLabel.Parent = ScrollFrame WeldLabel.Size = UDim2.new(0, 180, 0, 20) WeldLabel.Position = UDim2.new(0, 10, 0, 470)
 WeldLabel.BackgroundTransparency = 1 WeldLabel.Text = "PLAYER INTERACTIONS" WeldLabel.TextColor3 = Color3.fromRGB(255, 255, 255) WeldLabel.TextSize = 12 WeldLabel.Font = Enum.Font.SourceSansBold
 
 local WeldTextBox = Instance.new("TextBox")
-WeldTextBox.Name = "WeldTextBox" WeldTextBox.Parent = ScrollFrame WeldTextBox.Size = UDim2.new(0, 180, 0, 30) WeldTextBox.Position = UDim2.new(0, 10, 0, PointY + 25)
+WeldTextBox.Name = "WeldTextBox" WeldTextBox.Parent = ScrollFrame WeldTextBox.Size = UDim2.new(0, 180, 0, 30) WeldTextBox.Position = UDim2.new(0, 10, 0, 495)
 WeldTextBox.BackgroundColor3 = Color3.fromRGB(45, 45, 45) WeldTextBox.BackgroundTransparency = 0.1 WeldTextBox.Text = "" WeldTextBox.PlaceholderText = "Username..."
 WeldTextBox.TextColor3 = Color3.fromRGB(255, 255, 255) WeldTextBox.TextSize = 14
 
-local WeldBtn = CreateButton("WeldBtn", "Weld to Me", UDim2.new(0, 10, 0, PointY + 60), ScrollFrame, Color3.fromRGB(40, 100, 40))
-local BangBtn = CreateButton("BangBtn", "Bang Player", UDim2.new(0, 10, 0, PointY + 105), ScrollFrame, Color3.fromRGB(110, 80, 30))
-local TPToMeBtn = CreateButton("TPToMeBtn", "TP to Me", UDim2.new(0, 10, 0, PointY + 150), ScrollFrame, Color3.fromRGB(40, 80, 110))
-local TPToThemBtn = CreateButton("TPToThemBtn", "TP to Them", UDim2.new(0, 10, 0, PointY + 195), ScrollFrame, Color3.fromRGB(90, 40, 110))
-local UnweldBtn = CreateButton("UnweldBtn", "Stop Weld / Bang", UDim2.new(0, 10, 0, PointY + 240), ScrollFrame, Color3.fromRGB(100, 40, 40))
+local WeldBtn = CreateButton("WeldBtn", "Weld to Me", UDim2.new(0, 10, 0, 530), ScrollFrame, Color3.fromRGB(40, 100, 40))
+local BangBtn = CreateButton("BangBtn", "Bang Player", UDim2.new(0, 10, 0, 575), ScrollFrame, Color3.fromRGB(110, 80, 30))
+local TPToMeBtn = CreateButton("TPToMeBtn", "TP to Me", UDim2.new(0, 10, 0, 620), ScrollFrame, Color3.fromRGB(40, 80, 110))
+local TPToThemBtn = CreateButton("TPToThemBtn", "TP to Them", UDim2.new(0, 10, 0, 665), ScrollFrame, Color3.fromRGB(90, 40, 110))
+local UnweldBtn = CreateButton("UnweldBtn", "Stop Weld / Bang", UDim2.new(0, 10, 0, 710), ScrollFrame, Color3.fromRGB(100, 40, 40))
 
--- --- SLIDERIT (Siirretty alemmas) ---
-local SliderY = PointY + 300
+-- --- SLIDERIT ---
 local SliderFrame = Instance.new("Frame")
 local SliderBar = Instance.new("Frame")
 local SliderDot = Instance.new("TextButton")
 local SliderValueLabel = Instance.new("TextLabel")
 
-SliderFrame.Parent = ScrollFrame SliderFrame.Size = UDim2.new(0, 180, 0, 50) SliderFrame.Position = UDim2.new(0, 10, 0, SliderY) SliderFrame.BackgroundTransparency = 1
+SliderFrame.Parent = ScrollFrame SliderFrame.Size = UDim2.new(0, 180, 0, 50) SliderFrame.Position = UDim2.new(0, 10, 0, 770) SliderFrame.BackgroundTransparency = 1
 SliderValueLabel.Parent = SliderFrame SliderValueLabel.Size = UDim2.new(1, 0, 0, 20) SliderValueLabel.BackgroundTransparency = 1 SliderValueLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 SliderBar.Parent = SliderFrame SliderBar.Size = UDim2.new(1, 0, 0, 6) SliderBar.Position = UDim2.new(0, 0, 0, 25) SliderBar.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
 SliderDot.Parent = SliderBar SliderDot.Size = UDim2.new(0, 16, 0, 16) SliderDot.BackgroundColor3 = Color3.fromRGB(200, 200, 200) SliderDot.Text = ""
@@ -265,7 +262,7 @@ local WSliderBar = Instance.new("Frame")
 local WSliderDot = Instance.new("TextButton")
 local WSliderValueLabel = Instance.new("TextLabel")
 
-WSliderFrame.Parent = ScrollFrame WSliderFrame.Size = UDim2.new(0, 180, 0, 50) WSliderFrame.Position = UDim2.new(0, 10, 0, SliderY + 55) WSliderFrame.BackgroundTransparency = 1
+WSliderFrame.Parent = ScrollFrame WSliderFrame.Size = UDim2.new(0, 180, 0, 50) WSliderFrame.Position = UDim2.new(0, 10, 0, 825) WSliderFrame.BackgroundTransparency = 1
 WSliderValueLabel.Parent = WSliderFrame WSliderValueLabel.Size = UDim2.new(1, 0, 0, 20) WSliderValueLabel.BackgroundTransparency = 1 WSliderValueLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 WSliderBar.Parent = WSliderFrame WSliderBar.Size = UDim2.new(1, 0, 0, 6) WSliderBar.Position = UDim2.new(0, 0, 0, 25) WSliderBar.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
 WSliderDot.Parent = WSliderBar WSliderDot.Size = UDim2.new(0, 16, 0, 16) WSliderDot.BackgroundColor3 = Color3.fromRGB(150, 200, 255) WSliderDot.Text = ""
@@ -292,7 +289,7 @@ local JSliderBar = Instance.new("Frame")
 local JSliderDot = Instance.new("TextButton")
 local JSliderValueLabel = Instance.new("TextLabel")
 
-JSliderFrame.Parent = ScrollFrame JSliderFrame.Size = UDim2.new(0, 180, 0, 50) JSliderFrame.Position = UDim2.new(0, 10, 0, SliderY + 110) JSliderFrame.BackgroundTransparency = 1
+JSliderFrame.Parent = ScrollFrame JSliderFrame.Size = UDim2.new(0, 180, 0, 50) JSliderFrame.Position = UDim2.new(0, 10, 0, 880) JSliderFrame.BackgroundTransparency = 1
 JSliderValueLabel.Parent = JSliderFrame JSliderValueLabel.Size = UDim2.new(1, 0, 0, 20) JSliderValueLabel.BackgroundTransparency = 1 JSliderValueLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 JSliderBar.Parent = JSliderFrame JSliderBar.Size = UDim2.new(1, 0, 0, 6) JSliderBar.Position = UDim2.new(0, 0, 0, 25) JSliderBar.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
 JSliderDot.Parent = JSliderBar JSliderDot.Size = UDim2.new(0, 16, 0, 16) JSliderDot.BackgroundColor3 = Color3.fromRGB(255, 200, 150) JSliderDot.Text = ""
@@ -319,7 +316,7 @@ local BangSliderBar = Instance.new("Frame")
 local BangSliderDot = Instance.new("TextButton")
 local BangSliderValueLabel = Instance.new("TextLabel")
 
-BangSliderFrame.Parent = ScrollFrame BangSliderFrame.Size = UDim2.new(0, 180, 0, 50) BangSliderFrame.Position = UDim2.new(0, 10, 0, SliderY + 165) BangSliderFrame.BackgroundTransparency = 1
+BangSliderFrame.Parent = ScrollFrame BangSliderFrame.Size = UDim2.new(0, 180, 0, 50) BangSliderFrame.Position = UDim2.new(0, 10, 0, 935) BangSliderFrame.BackgroundTransparency = 1
 BangSliderValueLabel.Parent = BangSliderFrame BangSliderValueLabel.Size = UDim2.new(1, 0, 0, 20) BangSliderValueLabel.BackgroundTransparency = 1 BangSliderValueLabel.TextColor3 = Color3.fromRGB(240, 180, 80)
 BangSliderBar.Parent = BangSliderFrame BangSliderBar.Size = UDim2.new(1, 0, 0, 6) BangSliderBar.Position = UDim2.new(0, 0, 0, 25) BangSliderBar.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
 BangSliderDot.Parent = BangSliderBar BangSliderDot.Size = UDim2.new(0, 16, 0, 16) BangSliderDot.BackgroundColor3 = Color3.fromRGB(240, 180, 80) BangSliderDot.Text = ""
@@ -346,7 +343,7 @@ local SSliderBar = Instance.new("Frame")
 local SSliderDot = Instance.new("TextButton")
 local SSliderValueLabel = Instance.new("TextLabel")
 
-SSliderFrame.Parent = ScrollFrame SSliderFrame.Size = UDim2.new(0, 180, 0, 50) SSliderFrame.Position = UDim2.new(0, 10, 0, SliderY + 220) SSliderFrame.BackgroundTransparency = 1
+SSliderFrame.Parent = ScrollFrame SSliderFrame.Size = UDim2.new(0, 180, 0, 50) SSliderFrame.Position = UDim2.new(0, 10, 0, 990) SSliderFrame.BackgroundTransparency = 1
 SSliderValueLabel.Parent = SSliderFrame SSliderValueLabel.Size = UDim2.new(1, 0, 0, 20) SSliderValueLabel.BackgroundTransparency = 1 SSliderValueLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 SSliderBar.Parent = SSliderFrame SSliderBar.Size = UDim2.new(1, 0, 0, 6) SSliderBar.Position = UDim2.new(0, 0, 0, 25) SSliderBar.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
 SSliderDot.Parent = SSliderBar SSliderDot.Size = UDim2.new(0, 16, 0, 16) SSliderDot.BackgroundColor3 = Color3.fromRGB(200, 150, 255) SSliderDot.Text = ""
@@ -377,7 +374,7 @@ local SizeSliderBar = Instance.new("Frame")
 local SizeSliderDot = Instance.new("TextButton")
 local SizeSliderValueLabel = Instance.new("TextLabel")
 
-SizeSliderFrame.Parent = ScrollFrame SizeSliderFrame.Size = UDim2.new(0, 180, 0, 50) SizeSliderFrame.Position = UDim2.new(0, 10, 0, SliderY + 275) SizeSliderFrame.BackgroundTransparency = 1
+SizeSliderFrame.Parent = ScrollFrame SizeSliderFrame.Size = UDim2.new(0, 180, 0, 50) SizeSliderFrame.Position = UDim2.new(0, 10, 0, 1045) SizeSliderFrame.BackgroundTransparency = 1
 SizeSliderValueLabel.Parent = SizeSliderFrame SizeSliderValueLabel.Size = UDim2.new(1, 0, 0, 20) SizeSliderValueLabel.BackgroundTransparency = 1 SizeSliderValueLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 SizeSliderBar.Parent = SizeSliderFrame SizeSliderBar.Size = UDim2.new(1, 0, 0, 6) SizeSliderBar.Position = UDim2.new(0, 0, 0, 25) SizeSliderBar.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
 SizeSliderDot.Parent = SizeSliderBar SizeSliderDot.Size = UDim2.new(0, 16, 0, 16) SizeSliderDot.BackgroundColor3 = Color3.fromRGB(150, 255, 150) SizeSliderDot.Text = ""
@@ -418,21 +415,20 @@ UserInputService.InputChanged:Connect(function(input) if sizeDragging and input.
 
 
 -- --- LASKIN (CALCULATOR) ---
-local CalcY = SliderY + 335
 local CalcLabel = Instance.new("TextLabel")
-CalcLabel.Name = "CalcLabel" CalcLabel.Parent = ScrollFrame CalcLabel.Size = UDim2.new(0, 180, 0, 20) CalcLabel.Position = UDim2.new(0, 10, 0, CalcY)
+CalcLabel.Name = "CalcLabel" CalcLabel.Parent = ScrollFrame CalcLabel.Size = UDim2.new(0, 180, 0, 20) CalcLabel.Position = UDim2.new(0, 10, 0, 1105)
 CalcLabel.BackgroundTransparency = 1 CalcLabel.Text = "CALCULATOR" CalcLabel.TextColor3 = Color3.fromRGB(255, 255, 255) CalcLabel.TextSize = 12 CalcLabel.Font = Enum.Font.SourceSansBold
 
 local CalcTextBox = Instance.new("TextBox")
-CalcTextBox.Name = "CalcTextBox" CalcTextBox.Parent = ScrollFrame CalcTextBox.Size = UDim2.new(0, 180, 0, 30) CalcTextBox.Position = UDim2.new(0, 10, 0, CalcY + 25)
+CalcTextBox.Name = "CalcTextBox" CalcTextBox.Parent = ScrollFrame CalcTextBox.Size = UDim2.new(0, 180, 0, 30) CalcTextBox.Position = UDim2.new(0, 10, 0, 1130)
 CalcTextBox.BackgroundColor3 = Color3.fromRGB(45, 45, 45) CalcTextBox.BackgroundTransparency = 0.1 CalcTextBox.Text = "" CalcTextBox.PlaceholderText = "e.g. 50 * 2.5"
 CalcTextBox.TextColor3 = Color3.fromRGB(255, 255, 255) CalcTextBox.TextSize = 14
 
 local CalcResultLabel = Instance.new("TextLabel")
-CalcResultLabel.Name = "CalcResultLabel" CalcResultLabel.Parent = ScrollFrame CalcResultLabel.Size = UDim2.new(0, 180, 0, 25) CalcResultLabel.Position = UDim2.new(0, 10, 0, CalcY + 60)
+CalcResultLabel.Name = "CalcResultLabel" CalcResultLabel.Parent = ScrollFrame CalcResultLabel.Size = UDim2.new(0, 180, 0, 25) CalcResultLabel.Position = UDim2.new(0, 10, 0, 1165)
 CalcResultLabel.BackgroundColor3 = Color3.fromRGB(25, 25, 25) CalcResultLabel.BackgroundTransparency = 0.3 CalcResultLabel.Text = "Result: -" CalcResultLabel.TextColor3 = Color3.fromRGB(150, 255, 150) CalcResultLabel.TextSize = 13
 
-local CalcBtn = CreateButton("CalcBtn", "Calculate", UDim2.new(0, 10, 0, CalcY + 90), ScrollFrame, Color3.fromRGB(60, 80, 90))
+local CalcBtn = CreateButton("CalcBtn", "Calculate", UDim2.new(0, 10, 0, 1195), ScrollFrame, Color3.fromRGB(60, 80, 90))
 
 local function SafeCalculate(expression)
     local cleaned = string.gsub(expression, "[^%d%.%+%-%*%/%^%(%)]", "")
@@ -458,20 +454,20 @@ end)
 
 
 -- Pohjapainikkeet
-local DisableAllBtn = CreateButton("DisableAllBtn", "Disable All", UDim2.new(0, 10, 0, CalcY + 145), ScrollFrame, Color3.fromRGB(120, 40, 40))
-local ShutDownBtn = CreateButton("ShutDownBtn", "Shut Down GUI", UDim2.new(0, 10, 0, CalcY + 195), ScrollFrame, Color3.fromRGB(45, 45, 45))
+local DisableAllBtn = CreateButton("DisableAllBtn", "Disable All", UDim2.new(0, 10, 0, 1250), ScrollFrame, Color3.fromRGB(120, 40, 40))
+local ShutDownBtn = CreateButton("ShutDownBtn", "Shut Down GUI", UDim2.new(0, 10, 0, 1300), ScrollFrame, Color3.fromRGB(45, 45, 45))
 
 local function UpdateTexts()
     if not IsRunning then return end 
     ESPBtn.Text = "ESP: " .. (Settings.ESP and "ON" or "OFF") .. " (" .. Settings.Binds.ESP .. ")"
     NoclipBtn.Text = "Noclip: " .. (Settings.Noclip and "ON" or "OFF") .. " (" .. Settings.Binds.Noclip .. ")"
-    AimbotBtn.Text = "Aimbot: " .. (Settings.Aimbot and "ON" or "OFF") .. " (" .. Settings.Binds.E .. ")"
+    AimbotBtn.Text = "Aimbot: " .. (Settings.Aimbot and "ON" or "OFF") .. " (" .. Settings.Binds.Aimbot .. ")"
     FlightBtn.Text = "Flight: " .. (Settings.Flight and "ON" or "OFF") .. " (" .. Settings.Binds.Flight .. ")"
     SpinBtn.Text = "Spinbot: " .. (Settings.Spin and "ON" or "OFF") .. " (" .. Settings.Binds.Spin .. ")"
     WalkToggleBtn.Text = "WalkSpeed: " .. (Settings.WalkSpeedToggle and "ON" or "OFF") .. " (" .. Settings.Binds.WalkSpeedToggle .. ")"
     JumpToggleBtn.Text = "JumpPower: " .. (Settings.JumpPowerToggle and "ON" or "OFF") .. " (" .. Settings.Binds.JumpPowerToggle .. ")"
-    InvisBtn.Text = Settings.Invisibility and "Invisibility: PÄÄLLÄ" or "Invisibility: OFF"
-    InvisBtn.BackgroundColor3 = Settings.Invisibility and Color3.fromRGB(46, 204, 113) or Color3.fromRGB(70, 50, 90)
+    TPToolBtn.Text = "TP Tool: " .. (Settings.TPTool and "ON" or "OFF") .. " (" .. Settings.Binds.TPTool .. ")"
+    InvisibleBtn.Text = "Invisibility: " .. (Settings.Invisible and "ON" or "OFF") .. " (" .. Settings.Binds.Invisible .. ")"
 end
 UpdateTexts()
 
@@ -609,6 +605,7 @@ local function UpdateSpinbotState()
     else RemoveSpin() end
 end
 
+-- --- TOGGLE-FUNKTIOT JA KORJAUKSET ---
 local function CreateHighlight(char)
     if not char then return end
     local old = char:FindFirstChild("OG_Menu_ESP")
@@ -666,48 +663,55 @@ local function ToggleJumpPower()
     UpdateTexts()
 end
 
--- --- MUSKAHUB FUNKTIOT ---
+local function ToggleTPTool()
+    Settings.TPTool = not Settings.TPTool
+    UpdateTexts()
+end
+
+-- INVISIBILITY MODE LOGIIKKA
 local function ToggleInvisibility()
-    local character = LocalPlayer.Character
-    if character then
-        Settings.Invisibility = not Settings.Invisibility
-        for _, part in pairs(character:GetDescendants()) do
-            if part:IsA("BasePart") or part:IsA("Decal") then
-                if part.Name ~= "HumanoidRootPart" then
-                    part.Transparency = Settings.Invisibility and 1 or 0
-                end
+    Settings.Invisible = not Settings.Invisible
+    UpdateTexts()
+    
+    local player = LocalPlayer
+    local character = player.Character
+    if not character then return end
+    
+    if Settings.Invisible then
+        -- Tallennetaan sijainti ja poistetaan näkyvät osat paikallisesti
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
+        local hrp = character:FindFirstChild("HumanoidRootPart")
+        if hrp and humanoid then
+            RealCharacterCF = hrp.CFrame
+            local clone = Instance.new("Model")
+            clone.Name = "InvisibleClone"
+            
+            -- Tuhoaa näkyvyysosat muilta (perustuu tunnettuun Torso-katkaisuun)
+            local torso = character:FindFirstChild("LowerTorso") or character:FindFirstChild("Torso")
+            if torso then
+                torso:Destroy()
             end
         end
-        UpdateTexts()
+    else
+        -- Palataan normaaliksi lataamalla hahmo uudelleen (vaatii resetin poistuakseen pelimoottorin rajoitusten takia)
+        if player.Character then
+            local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
+            if humanoid then humanoid.Health = 0 end
+        end
     end
 end
 
-local function GiveTPTool()
-    local backpack = LocalPlayer:FindFirstChildOfClass("Backpack")
-    if backpack then
-        if backpack:FindFirstChild("Teleport Tool") or (LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Teleport Tool")) then
-            TPToolBtn.Text = "Jo reititetty!"
-            task.delay(1.5, function() if IsRunning then TPToolBtn.Text = "Get TP Tool" end end)
-            return
+-- Klikkaus-teleportin kuuntelija hiirelle [source: 1]
+local Mouse = LocalPlayer:GetMouse()
+Mouse.Button1Down:Connect(function()
+    if Settings.TPTool and IsRunning then
+        local character = LocalPlayer.Character
+        local hrp = character and character:FindFirstChild("HumanoidRootPart")
+        if hrp and Mouse.Hit then
+            hrp.CFrame = CFrame.new(Mouse.Hit.Position + Vector3.new(0, 3, 0))
         end
-        
-        local tool = Instance.new("Tool")
-        tool.Name = "Teleport Tool"
-        tool.RequiresHandle = false
-        
-        tool.Activated:Connect(function()
-            local mouse = LocalPlayer:GetMouse()
-            local character = LocalPlayer.Character
-            if character and character:FindFirstChild("HumanoidRootPart") then
-                character.HumanoidRootPart.CFrame = CFrame.new(mouse.Hit.Position + Vector3.new(0, 3, 0))
-            end
-        end)
-        
-        tool.Parent = backpack
-        TPToolBtn.Text = "TP Tool Lisätty!"
-        task.delay(1.5, function() if IsRunning then TPToolBtn.Text = "Get TP Tool" end end)
     end
-end
+end)
 
 -- Liitetään GUI-painikkeet funktioihin
 ESPBtn.MouseButton1Click:Connect(ToggleESP)
@@ -717,10 +721,8 @@ FlightBtn.MouseButton1Click:Connect(ToggleFlight)
 SpinBtn.MouseButton1Click:Connect(ToggleSpin)
 WalkToggleBtn.MouseButton1Click:Connect(ToggleWalkSpeed)
 JumpToggleBtn.MouseButton1Click:Connect(ToggleJumpPower)
-
--- Muskahub painikkeet
-InvisBtn.MouseButton1Click:Connect(ToggleInvisibility)
-TPToolBtn.MouseButton1Click:Connect(GiveTPTool)
+TPToolBtn.MouseButton1Click:Connect(ToggleTPTool)
+InvisibleBtn.MouseButton1Click:Connect(ToggleInvisibility)
 
 WeldBtn.MouseButton1Click:Connect(WeldToMe)
 BangBtn.MouseButton1Click:Connect(BangPlayer)
@@ -731,8 +733,8 @@ UnweldBtn.MouseButton1Click:Connect(UnweldPlayer)
 DisableAllBtn.MouseButton1Click:Connect(function()
     Settings.ESP = false Settings.Noclip = false Settings.Aimbot = false
     Settings.Flight = false Settings.Spin = false Settings.WalkSpeedToggle = false
-    Settings.JumpPowerToggle = false
-    if Settings.Invisibility then ToggleInvisibility() end -- Palautetaan näkyväksi
+    Settings.JumpPowerToggle = false Settings.TPTool = false
+    if Settings.Invisible then ToggleInvisibility() end
     UnweldPlayer() RemoveSpin() UpdateTexts()
     for _, p in pairs(Players:GetPlayers()) do
         if p.Character then local hl = p.Character:FindFirstChild("OG_Menu_ESP") if hl then hl:Destroy() end end
@@ -742,7 +744,6 @@ end)
 ShutDownBtn.MouseButton1Click:Connect(function()
     IsRunning = false
     RemoveSpin() UnweldPlayer()
-    if Settings.Invisibility then Settings.Invisibility = false ToggleInvisibility() end
     for _, c in pairs(Connections) do c:Disconnect() end
     ScreenGui:Destroy()
 end)
@@ -821,5 +822,7 @@ table.insert(Connections, UserInputService.InputBegan:Connect(function(input, gp
     elseif input.KeyCode == GetUserInputTypeOrKeyCode("Spin") or input.UserInputType == GetUserInputTypeOrKeyCode("Spin") then ToggleSpin()
     elseif input.KeyCode == GetUserInputTypeOrKeyCode("WalkSpeedToggle") or input.UserInputType == GetUserInputTypeOrKeyCode("WalkSpeedToggle") then ToggleWalkSpeed()
     elseif input.KeyCode == GetUserInputTypeOrKeyCode("JumpPowerToggle") or input.UserInputType == GetUserInputTypeOrKeyCode("JumpPowerToggle") then ToggleJumpPower()
+    elseif input.KeyCode == GetUserInputTypeOrKeyCode("TPTool") or input.UserInputType == GetUserInputTypeOrKeyCode("TPTool") then ToggleTPTool()
+    elseif input.KeyCode == GetUserInputTypeOrKeyCode("Invisible") or input.UserInputType == GetUserInputTypeOrKeyCode("Invisible") then ToggleInvisibility()
     end
 end))
