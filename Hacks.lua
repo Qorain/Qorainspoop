@@ -17,13 +17,21 @@ local Settings = {
     WalkSpeedToggle = false,
     JumpPowerToggle = false,
     BangActive = false,
-    InvisMode = false, -- UUSI
+    InvisMode = false,
     FlightSpeed = 50,
     WalkSpeed = 16,
     JumpPower = 50,
     SpinSpeed = 100,
     BangSpeed = 20,
     CharacterScale = 1,
+    -- UUDET ALIASERUKSET ESP & AIMBOT
+    ESP_Boxes = false,
+    ESP_Tracers = false,
+    ESP_Chams = true,
+    ESP_Names = false,
+    Aimbot_FOV = 100,
+    Aimbot_ShowFOV = false,
+    Aimbot_TargetPart = "Head", -- "Head" tai "HumanoidRootPart"
     Binds = {
         ESP = "F",
         Noclip = "V",
@@ -32,7 +40,7 @@ local Settings = {
         Spin = "H",
         WalkSpeedToggle = "J",
         JumpPowerToggle = "K",
-        InvisMode = "L" -- UUSI
+        InvisMode = "L"
     }
 }
 
@@ -47,6 +55,13 @@ local function SaveSettings()
                 SpinSpeed = Settings.SpinSpeed,
                 BangSpeed = Settings.BangSpeed,
                 CharacterScale = Settings.CharacterScale,
+                ESP_Boxes = Settings.ESP_Boxes,
+                ESP_Tracers = Settings.ESP_Tracers,
+                ESP_Chams = Settings.ESP_Chams,
+                ESP_Names = Settings.ESP_Names,
+                Aimbot_FOV = Settings.Aimbot_FOV,
+                Aimbot_ShowFOV = Settings.Aimbot_ShowFOV,
+                Aimbot_TargetPart = Settings.Aimbot_TargetPart,
                 Binds = Settings.Binds
             })
         end)
@@ -68,6 +83,13 @@ local function LoadSettings()
             if decoded.SpinSpeed then Settings.SpinSpeed = decoded.SpinSpeed end
             if decoded.BangSpeed then Settings.BangSpeed = decoded.BangSpeed end
             if decoded.CharacterScale then Settings.CharacterScale = decoded.CharacterScale end
+            if decoded.ESP_Boxes ~= nil then Settings.ESP_Boxes = decoded.ESP_Boxes end
+            if decoded.ESP_Tracers ~= nil then Settings.ESP_Tracers = decoded.ESP_Tracers end
+            if decoded.ESP_Chams ~= nil then Settings.ESP_Chams = decoded.ESP_Chams end
+            if decoded.ESP_Names ~= nil then Settings.ESP_Names = decoded.ESP_Names end
+            if decoded.Aimbot_FOV then Settings.Aimbot_FOV = decoded.Aimbot_FOV end
+            if decoded.Aimbot_ShowFOV ~= nil then Settings.Aimbot_ShowFOV = decoded.Aimbot_ShowFOV end
+            if decoded.Aimbot_TargetPart then Settings.Aimbot_TargetPart = decoded.Aimbot_TargetPart end
             if decoded.Binds then
                 for k, v in pairs(decoded.Binds) do
                     Settings.Binds[k] = v
@@ -100,6 +122,13 @@ local FullSizeY = 530
 local IsAtBottom = false
 local TargetBangPlayer = nil
 local InvisClone = nil
+
+-- --- FOV YMPYRÄ DRAWING (Aimbot) ---
+local FOVCircle = Drawing.new("Circle")
+FOVCircle.Thickness = 1
+FOVCircle.Color = Color3.fromRGB(255, 0, 50)
+FOVCircle.Filled = false
+FOVCircle.Transparency = 0.7
 
 -- --- ANTI DISCONNECT / ANTI-AFK SCRIPT ---
 task.spawn(function()
@@ -134,7 +163,7 @@ MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 MainFrame.BackgroundTransparency = 0.1
 MainFrame.Position = UDim2.new(0.1, 0, 0.1, 0)
 MainFrame.Size = UDim2.new(0, 200, 0, FullSizeY)
-MainFrame.ClipsDescendants = true
+MainFrame.ClipsDescendants = false -- Sallitaan asetusikkunoiden tulla yli reunan jos tarve
 
 -- Liikuteltava ikkuna
 local dragToggle, dragStart, startPos
@@ -188,7 +217,7 @@ ScrollFrame.Parent = MainFrame
 ScrollFrame.BackgroundTransparency = 1
 ScrollFrame.Position = UDim2.new(0, 0, 0, 40)
 ScrollFrame.Size = UDim2.new(1, 0, 1, -40)
-ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 1360) -- Kasvatettu tilaa uusille painikkeille
+ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 1360)
 ScrollFrame.ScrollBarThickness = 6
 ScrollFrame.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
 
@@ -208,10 +237,114 @@ local FlightBtn = CreateButton("FlightBtn", "", UDim2.new(0, 10, 0, 160), Scroll
 local SpinBtn = CreateButton("SpinBtn", "", UDim2.new(0, 10, 0, 210), ScrollFrame)
 local WalkToggleBtn = CreateButton("WalkToggleBtn", "", UDim2.new(0, 10, 0, 260), ScrollFrame)
 local JumpToggleBtn = CreateButton("JumpToggleBtn", "", UDim2.new(0, 10, 0, 310), ScrollFrame)
-local InvisBtn = CreateButton("InvisBtn", "", UDim2.new(0, 10, 0, 360), ScrollFrame) -- UUSI
-local TPToolBtn = CreateButton("TPToolBtn", "Get TP Tool", UDim2.new(0, 10, 0, 410), ScrollFrame, Color3.fromRGB(40, 90, 90)) -- UUSI
+local InvisBtn = CreateButton("InvisBtn", "", UDim2.new(0, 10, 0, 360), ScrollFrame)
+local TPToolBtn = CreateButton("TPToolBtn", "Get TP Tool", UDim2.new(0, 10, 0, 410), ScrollFrame, Color3.fromRGB(40, 90, 90))
 
--- --- PLAYER INTERACTIONS (Siirretty alemmas jotta uudet mahtuu) ---
+-- --- SUB-SETTINGS PANELS (Oikeaklikkausvalikot) ---
+local EspSettingsFrame = Instance.new("Frame")
+EspSettingsFrame.Name = "EspSettingsFrame"
+EspSettingsFrame.Size = UDim2.new(0, 170, 0, 160)
+EspSettingsFrame.Position = UDim2.new(1, 5, 0, 10)
+EspSettingsFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+EspSettingsFrame.BorderSizePixel = 1
+EspSettingsFrame.Visible = false
+EspSettingsFrame.Parent = MainFrame
+
+local AimbotSettingsFrame = Instance.new("Frame")
+AimbotSettingsFrame.Name = "AimbotSettingsFrame"
+AimbotSettingsFrame.Size = UDim2.new(0, 170, 0, 150)
+AimbotSettingsFrame.Position = UDim2.new(1, 5, 0, 110)
+AimbotSettingsFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+AimbotSettingsFrame.BorderSizePixel = 1
+AimbotSettingsFrame.Visible = false
+AimbotSettingsFrame.Parent = MainFrame
+
+local function CreateSubToggle(text, pos, parent, default, callback)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, -10, 0, 25)
+    btn.Position = pos
+    btn.BackgroundColor3 = default and Color3.fromRGB(50, 100, 50) or Color3.fromRGB(45, 45, 45)
+    btn.Text = text .. ": " .. (default and "ON" or "OFF")
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.TextSize = 11
+    btn.Font = Enum.Font.SourceSansBold
+    btn.Parent = parent
+    
+    btn.MouseButton1Click:Connect(function()
+        local state = callback()
+        btn.BackgroundColor3 = state and Color3.fromRGB(50, 100, 50) or Color3.fromRGB(45, 45, 45)
+        btn.Text = text .. ": " .. (state and "ON" or "OFF")
+        SaveSettings()
+    end)
+    return btn
+end
+
+-- ESP-Asetukset Sisältö
+local EspClose = Instance.new("TextButton", EspSettingsFrame)
+EspClose.Size = UDim2.new(0, 20, 0, 20) EspClose.Position = UDim2.new(1, -22, 0, 2) EspClose.Text = "X" EspClose.TextColor3 = Color3.fromRGB(200,50,50) EspClose.BackgroundTransparency = 1 EspClose.MouseButton1Click:Connect(function() EspSettingsFrame.Visible = false end)
+
+local EspTitle = Instance.new("TextLabel", EspSettingsFrame)
+EspTitle.Size = UDim2.new(1, -25, 0, 20) EspTitle.Text = "  ESP Config" EspTitle.TextColor3 = Color3.fromRGB(200,200,200) EspTitle.TextSize = 12 EspTitle.Font = Enum.Font.SourceSansBold EspTitle.TextXAlignment = Enum.TextXAlignment.Left EspTitle.BackgroundTransparency = 1
+
+CreateSubToggle("Chams (Highlight)", UDim2.new(0, 5, 0, 25), EspSettingsFrame, Settings.ESP_Chams, function() Settings.ESP_Chams = not Settings.ESP_Chams return Settings.ESP_Chams end)
+CreateSubToggle("Boxes (2D)", UDim2.new(0, 5, 0, 55), EspSettingsFrame, Settings.ESP_Boxes, function() Settings.ESP_Boxes = not Settings.ESP_Boxes return Settings.ESP_Boxes end)
+CreateSubToggle("Tracers (Lines)", UDim2.new(0, 5, 0, 85), EspSettingsFrame, Settings.ESP_Tracers, function() Settings.ESP_Tracers = not Settings.ESP_Tracers return Settings.ESP_Tracers end)
+CreateSubToggle("Names", UDim2.new(0, 5, 0, 115), EspSettingsFrame, Settings.ESP_Names, function() Settings.ESP_Names = not Settings.ESP_Names return Settings.ESP_Names end)
+
+-- Aimbot-Asetukset Sisältö
+local AimClose = Instance.new("TextButton", AimbotSettingsFrame)
+AimClose.Size = UDim2.new(0, 20, 0, 20) AimClose.Position = UDim2.new(1, -22, 0, 2) AimClose.Text = "X" AimClose.TextColor3 = Color3.fromRGB(200,50,50) AimClose.BackgroundTransparency = 1 AimClose.MouseButton1Click:Connect(function() AimbotSettingsFrame.Visible = false end)
+
+local AimTitle = Instance.new("TextLabel", AimbotSettingsFrame)
+AimTitle.Size = UDim2.new(1, -25, 0, 20) AimTitle.Text = "  Aimbot Config" AimTitle.TextColor3 = Color3.fromRGB(200,200,200) AimTitle.TextSize = 12 AimTitle.Font = Enum.Font.SourceSansBold AimTitle.TextXAlignment = Enum.TextXAlignment.Left AimTitle.BackgroundTransparency = 1
+
+CreateSubToggle("Show FOV Circle", UDim2.new(0, 5, 0, 25), AimbotSettingsFrame, Settings.Aimbot_ShowFOV, function() Settings.Aimbot_ShowFOV = not Settings.Aimbot_ShowFOV return Settings.Aimbot_ShowFOV end)
+
+local AimPartBtn = Instance.new("TextButton", AimbotSettingsFrame)
+AimPartBtn.Size = UDim2.new(1, -10, 0, 25) AimPartBtn.Position = UDim2.new(0, 5, 0, 55) AimPartBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45) AimPartBtn.TextColor3 = Color3.fromRGB(255, 255, 255) AimPartBtn.Font = Enum.Font.SourceSansBold AimPartBtn.TextSize = 11 AimPartBtn.Text = "Target: " .. Settings.Aimbot_TargetPart
+AimPartBtn.MouseButton1Click:Connect(function()
+    Settings.Aimbot_TargetPart = (Settings.Aimbot_TargetPart == "Head") and "HumanoidRootPart" or "Head"
+    AimPartBtn.Text = "Target: " .. Settings.Aimbot_TargetPart
+    SaveSettings()
+end)
+
+-- Säädin FOV-koolle asetusvalikon sisään
+local FovSliderLabel = Instance.new("TextLabel", AimbotSettingsFrame)
+FovSliderLabel.Size = UDim2.new(1, -10, 0, 15) FovSliderLabel.Position = UDim2.new(0, 5, 0, 85) FovSliderLabel.BackgroundTransparency = 1 FovSliderLabel.TextColor3 = Color3.fromRGB(255,255,255) FovSliderLabel.TextSize = 10 FovSliderLabel.Text = "FOV Radius: " .. Settings.Aimbot_FOV
+
+local FovSliderBar = Instance.new("Frame", AimbotSettingsFrame)
+FovSliderBar.Size = UDim2.new(1, -20, 0, 4) FovSliderBar.Position = UDim2.new(0, 10, 0, 105) FovSliderBar.BackgroundColor3 = Color3.fromRGB(80,80,80)
+
+local FovSliderDot = Instance.new("TextButton", FovSliderBar)
+FovSliderDot.Size = UDim2.new(0, 12, 0, 12) FovSliderDot.Position = UDim2.new(math.clamp(Settings.Aimbot_FOV / 500, 0, 1), -6, 0.5, -6) FovSliderDot.BackgroundColor3 = Color3.fromRGB(200,200,200) FovSliderDot.Text = ""
+
+local fovDragging = false
+FovSliderDot.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then fovDragging = true end end)
+UserInputService.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then fovDragging = false end end)
+UserInputService.InputChanged:Connect(function(input)
+    if fovDragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local relativeX = input.Position.X - FovSliderBar.AbsolutePosition.X
+        local percentage = math.clamp(relativeX / FovSliderBar.AbsoluteSize.X, 0, 1)
+        FovSliderDot.Position = UDim2.new(percentage, -6, 0.5, -6)
+        Settings.Aimbot_FOV = math.floor(percentage * 500)
+        FovSliderLabel.Text = "FOV Radius: " .. Settings.Aimbot_FOV
+        SaveSettings()
+    end
+end)
+
+-- Avaus oikealla klikkauksella
+ESPBtn.MouseButton2Click:Connect(function()
+    AimbotSettingsFrame.Visible = false
+    EspSettingsFrame.Visible = not EspSettingsFrame.Visible
+end)
+
+AimbotBtn.MouseButton2Click:Connect(function()
+    EspSettingsFrame.Visible = false
+    AimbotSettingsFrame.Visible = not AimbotSettingsFrame.Visible
+end)
+
+
+-- --- PLAYER INTERACTIONS ---
 local WeldLabel = Instance.new("TextLabel")
 WeldLabel.Name = "WeldLabel" WeldLabel.Parent = ScrollFrame WeldLabel.Size = UDim2.new(0, 180, 0, 20) WeldLabel.Position = UDim2.new(0, 10, 0, 465)
 WeldLabel.BackgroundTransparency = 1 WeldLabel.Text = "PLAYER INTERACTIONS" WeldLabel.TextColor3 = Color3.fromRGB(255, 255, 255) WeldLabel.TextSize = 12 WeldLabel.Font = Enum.Font.SourceSansBold
@@ -227,7 +360,7 @@ local TPToMeBtn = CreateButton("TPToMeBtn", "TP to Me", UDim2.new(0, 10, 0, 615)
 local TPToThemBtn = CreateButton("TPToThemBtn", "TP to Them", UDim2.new(0, 10, 0, 660), ScrollFrame, Color3.fromRGB(90, 40, 110))
 local UnweldBtn = CreateButton("UnweldBtn", "Stop Weld / Bang", UDim2.new(0, 10, 0, 705), ScrollFrame, Color3.fromRGB(100, 40, 40))
 
--- --- SLIDERIT (Siirretty alemmas) ---
+-- --- SLIDERIT ---
 local SliderFrame = Instance.new("Frame")
 local SliderBar = Instance.new("Frame")
 local SliderDot = Instance.new("TextButton")
@@ -288,7 +421,8 @@ local JSliderDot = Instance.new("TextButton")
 local JSliderValueLabel = Instance.new("TextLabel")
 
 JSliderFrame.Parent = ScrollFrame JSliderFrame.Size = UDim2.new(0, 180, 0, 50) JSliderFrame.Position = UDim2.new(0, 10, 0, 870) JSliderFrame.BackgroundTransparency = 1
-JSliderValueLabel.Parent = JSliderFrame JSliderValueLabel.Size = UDim2.new(1, 0, 0, 20) JSliderValueLabel.BackgroundTransparency = 1 JSliderValueLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+JSliderValueLabel.Parent = JSliderFrame JSliderValueLabel.Size = UDim2.new(1, 0, 0, 20) JSliderValueLabel.BackgroundTransparency = 1 JSliderValueLabel.TextColor3 = Color3.fromRGB(255, 200, 150)
+
 JSliderBar.Parent = JSliderFrame JSliderBar.Size = UDim2.new(1, 0, 0, 6) JSliderBar.Position = UDim2.new(0, 0, 0, 25) JSliderBar.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
 JSliderDot.Parent = JSliderBar JSliderDot.Size = UDim2.new(0, 16, 0, 16) JSliderDot.BackgroundColor3 = Color3.fromRGB(255, 200, 150) JSliderDot.Text = ""
 
@@ -518,7 +652,6 @@ local function ToggleInvis()
     if not char then return end
     
     if Settings.InvisMode then
-        -- Tehdään hahmo näkymättömäksi muille tuhoamalla sen renderöitävät osat paikallisesti
         char:MoveTo(Vector3.new(char.PrimaryPart.Position.X, char.PrimaryPart.Position.Y + 99999, char.PrimaryPart.Position.Z))
         task.wait(0.2)
         local hrp = char:FindFirstChild("HumanoidRootPart")
@@ -538,9 +671,8 @@ local function ToggleInvis()
             end
         end
     else
-        -- Palautetaan normaaliksi
         if InvisClone then InvisClone:Destroy() InvisClone = nil end
-        LocalPlayer:LoadCharacter() -- Turvallisin tapa palauttaa hahmo ennalleen bugien välttämiseksi
+        LocalPlayer:LoadCharacter()
     end
 end
 
@@ -659,7 +791,7 @@ local function CreateHighlight(char)
     if not char then return end
     local old = char:FindFirstChild("OG_Menu_ESP")
     if old then old:Destroy() end
-    if Settings.ESP and char ~= LocalPlayer.Character then
+    if Settings.ESP and Settings.ESP_Chams and char ~= LocalPlayer.Character then
         local hl = Instance.new("Highlight")
         hl.Name = "OG_Menu_ESP"
         hl.FillColor = Color3.fromRGB(255, 0, 50)
@@ -668,15 +800,23 @@ local function CreateHighlight(char)
     end
 end
 
+local function CleanAllESPObjects()
+    for _, p in pairs(Players:GetPlayers()) do
+        if p.Character then
+            local hl = p.Character:FindFirstChild("OG_Menu_ESP") if hl then hl:Destroy() end
+        end
+        local folder = ScreenGui:FindFirstChild("ESP_Storage_" .. p.Name)
+        if folder then folder:Destroy() end
+    end
+end
+
 local function ToggleESP()
     Settings.ESP = not Settings.ESP
     UpdateTexts()
-    for _, p in pairs(Players:GetPlayers()) do
-        if p.Character then
-            if Settings.ESP then CreateHighlight(p.Character) else
-                local hl = p.Character:FindFirstChild("OG_Menu_ESP")
-                if hl then hl:Destroy() end
-            end
+    CleanAllESPObjects()
+    if Settings.ESP then
+        for _, p in pairs(Players:GetPlayers()) do
+            if p.Character then CreateHighlight(p.Character) end
         end
     end
 end
@@ -720,7 +860,7 @@ FlightBtn.MouseButton1Click:Connect(ToggleFlight)
 SpinBtn.MouseButton1Click:Connect(ToggleSpin)
 WalkToggleBtn.MouseButton1Click:Connect(ToggleWalkSpeed)
 JumpToggleBtn.MouseButton1Click:Connect(ToggleJumpPower)
-InvisBtn.MouseButton1Click:Connect(ToggleInvis) -- UUSI
+InvisBtn.MouseButton1Click:Connect(ToggleInvis)
 
 WeldBtn.MouseButton1Click:Connect(WeldToMe)
 BangBtn.MouseButton1Click:Connect(BangPlayer)
@@ -734,18 +874,167 @@ DisableAllBtn.MouseButton1Click:Connect(function()
     Settings.JumpPowerToggle = false Settings.InvisMode = false
     if InvisClone then InvisClone:Destroy() InvisClone = nil end
     UnweldPlayer() RemoveSpin() UpdateTexts()
-    for _, p in pairs(Players:GetPlayers()) do
-        if p.Character then local hl = p.Character:FindFirstChild("OG_Menu_ESP") if hl then hl:Destroy() end end
-    end
+    CleanAllESPObjects()
 end)
 
 ShutDownBtn.MouseButton1Click:Connect(function()
     IsRunning = false
     RemoveSpin() UnweldPlayer()
     if InvisClone then InvisClone:Destroy() InvisClone = nil end
+    if FOVCircle then FOVCircle:Destroy() end
+    CleanAllESPObjects()
     for _, c in pairs(Connections) do c:Disconnect() end
     ScreenGui:Destroy()
 end)
+
+-- --- DRAWING PER-FRAME (Boxes, Tracers, Names & Aimbot FOV) ---
+local function GetClosestPlayerToMouse()
+    local target = nil
+    local maxDist = Settings.Aimbot_FOV
+    local mousePos = UserInputService:GetMouseLocation()
+
+    for _, p in pairs(Players:GetPlayers()) do
+        if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("Humanoid") and p.Character.Humanoid.Health > 0 then
+            local part = p.Character:FindFirstChild(Settings.Aimbot_TargetPart)
+            if part then
+                local screenPos, onScreen = Camera:WorldToViewportPoint(part.Position)
+                if onScreen then
+                    local dist = (Vector2.new(screenPos.X, screenPos.Y) - mousePos).Magnitude
+                    if dist < maxDist then
+                        maxDist = dist
+                        target = part
+                    end
+                end
+            end
+        end
+    end
+    return target
+end
+
+table.insert(Connections, RunService.RenderStepped:Connect(function()
+    if not IsRunning then return end
+    
+    -- Update FOV Circle Location
+    if Settings.Aimbot and Settings.Aimbot_ShowFOV then
+        FOVCircle.Visible = true
+        FOVCircle.Radius = Settings.Aimbot_FOV
+        FOVCircle.Position = UserInputService:GetMouseLocation()
+    else
+        FOVCircle.Visible = false
+    end
+
+    -- AIMBOT SEURANTA
+    if Settings.Aimbot and UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) then
+        local targetPart = GetClosestPlayerToMouse()
+        if targetPart then
+            local targetPos = targetPart.Position
+            -- Yksinkertainen vakaa kameran kääntö kohteeseen
+            Camera.CFrame = CFrame.new(Camera.CFrame.Position, targetPos)
+        end
+    end
+
+    -- ADVANCED ESP (Boxes, Tracers, Names) 2D GUI-pohjainen toteutus piirtämistä varten
+    for _, p in pairs(Players:GetPlayers()) do
+        local storageName = "ESP_Storage_" .. p.Name
+        local storage = ScreenGui:FindFirstChild(storageName)
+        
+        if not Settings.ESP or p == LocalPlayer or not p.Character or not p.Character:FindFirstChild("HumanoidRootPart") or not p.Character:FindFirstChild("Humanoid") or p.Character.Humanoid.Health <= 0 then
+            if storage then storage:Destroy() end
+            continue
+        end
+        
+        if not storage then
+            storage = Instance.new("Folder")
+            storage.Name = storageName
+            storage.Parent = ScreenGui
+        end
+
+        local hrp = p.Character.HumanoidRootPart
+        local head = p.Character:FindFirstChild("Head") or hrp
+        
+        local hrpPos, hrpOnScreen = Camera:WorldToViewportPoint(hrp.Position)
+        
+        -- Lasketaan ylä- ja alaosa laatikkoa varten
+        local headPos = Camera:WorldToViewportPoint(head.Position + Vector3.new(0, 0.5, 0))
+        local legPos = Camera:WorldToViewportPoint(hrp.Position - Vector3.new(0, 3, 0))
+
+        if hrpOnScreen then
+            local boxHeight = math.abs(headPos.Y - legPos.Y)
+            local boxWidth = boxHeight / 1.5
+            
+            -- BOX ESP
+            local box = storage:FindFirstChild("Box")
+            if Settings.ESP_Boxes then
+                if not box then
+                    box = Instance.new("Frame")
+                    box.Name = "Box"
+                    box.BackgroundTransparency = 1
+                    box.BorderSizePixel = 1
+                    box.BorderColor3 = Color3.fromRGB(255, 0, 50)
+                    box.Parent = storage
+                end
+                box.Visible = true
+                box.Size = UDim2.new(0, boxWidth, 0, boxHeight)
+                box.Position = UDim2.new(0, hrpPos.X - (boxWidth / 2), 0, hrpPos.Y - (boxHeight / 2))
+            elseif box then box.Visible = false end
+
+            -- TRACERS ESP
+            local tracer = storage:FindFirstChild("Tracer")
+            if Settings.ESP_Tracers then
+                if not tracer then
+                    tracer = Instance.new("Frame")
+                    tracer.Name = "Tracer"
+                    tracer.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                    tracer.BorderSizePixel = 0
+                    tracer.Parent = storage
+                end
+                tracer.Visible = true
+                
+                local startX = Camera.ViewportSize.X / 2
+                local startY = Camera.ViewportSize.Y
+                local endX = hrpPos.X
+                local endY = hrpPos.Y
+                
+                local distance = math.sqrt((endX - startX)^2 + (endY - startY)^2)
+                tracer.Size = UDim2.new(0, distance, 0, 1)
+                tracer.Position = UDim2.new(0, (startX + endX) / 2 - (distance / 2), 0, (startY + endY) / 2)
+                tracer.Rotation = math.deg(math.atan2(endY - startY, endX - startX))
+            elseif tracer then tracer.Visible = false end
+
+            -- NAMES ESP
+            local nameLabel = storage:FindFirstChild("NameLabel")
+            if Settings.ESP_Names then
+                if not nameLabel then
+                    nameLabel = Instance.new("TextLabel")
+                    nameLabel.Name = "NameLabel"
+                    nameLabel.BackgroundTransparency = 1
+                    nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+                    nameLabel.TextSize = 12
+                    nameLabel.Font = Enum.Font.SourceSansBold
+                    nameLabel.Parent = storage
+                end
+                nameLabel.Visible = true
+                nameLabel.Text = p.Name .. " [" .. math.floor(p.Character.Humanoid.Health) .. "]"
+                nameLabel.Position = UDim2.new(0, hrpPos.X - 50, 0, (hrpPos.Y - (boxHeight / 2)) - 20)
+                nameLabel.Size = UDim2.new(0, 100, 0, 15)
+            elseif nameLabel then nameLabel.Visible = false end
+            
+            -- Päivitetään Highlight lennosta jos Chams kytketään päälle/pois asetuksista
+            local hl = p.Character:FindFirstChild("OG_Menu_ESP")
+            if Settings.ESP_Chams and not hl then
+                CreateHighlight(p.Character)
+            elseif not Settings.ESP_Chams and hl then
+                hl:Destroy()
+            end
+        else
+            -- Piilotetaan jos ei ruudulla
+            local b = storage:FindFirstChild("Box") if b then b.Visible = false end
+            local t = storage:FindFirstChild("Tracer") if t then t.Visible = false end
+            local n = storage:FindFirstChild("NameLabel") if n then n.Visible = false end
+            local hl = p.Character:FindFirstChild("OG_Menu_ESP") if hl then hl:Destroy() end
+        end
+    end
+end))
 
 -- --- FYSIKKA / STEPPED / LOOPI ---
 table.insert(Connections, RunService.Stepped:Connect(function()
@@ -754,12 +1043,10 @@ table.insert(Connections, RunService.Stepped:Connect(function()
     local humanoid = char and char:FindFirstChildOfClass("Humanoid")
     local hrp = char and char:FindFirstChild("HumanoidRootPart")
     
-    -- INVIS MODE LOGIIKKA (Pitää fake rootin oikeassa kohdassa)
     if Settings.InvisMode and hrp and InvisClone then
         InvisClone.CFrame = hrp.CFrame
     end
     
-    -- NOCLIP-KORJAUS
     if char then
         for _, part in pairs(char:GetDescendants()) do
             if part:IsA("BasePart") then
@@ -779,7 +1066,6 @@ table.insert(Connections, RunService.Stepped:Connect(function()
         end
     end
     
-    -- FLIGHT LOGIIKKA
     if Settings.Flight and hrp and humanoid then
         local moveDir = humanoid.MoveDirection
         local flyVel = Vector3.new(0, 0, 0)
@@ -792,13 +1078,11 @@ table.insert(Connections, RunService.Stepped:Connect(function()
         humanoid:ChangeState(Enum.HumanoidStateType.Freefall)
     end
     
-    -- WALKSPEED / JUMPPOWER YLLÄPITO
     if humanoid then
         if Settings.WalkSpeedToggle then humanoid.WalkSpeed = Settings.WalkSpeed end
         if Settings.JumpPowerToggle then humanoid.JumpPower = Settings.JumpPower end
     end
     
-    -- BANG PLAYER LOGIIKKA
     if Settings.BangActive and TargetBangPlayer and TargetBangPlayer.Character and TargetBangPlayer.Character:FindFirstChild("HumanoidRootPart") and hrp then
         local targetHRP = TargetBangPlayer.Character.HumanoidRootPart
         local bangAnim = math.sin(tick() * Settings.BangSpeed) * 2
@@ -808,7 +1092,6 @@ table.insert(Connections, RunService.Stepped:Connect(function()
     end
 end))
 
--- SEURATAAN UUSIA PELAAJIA ESP-VARTEN JA ANNETAAN TP TOOL SPAWNATESSA
 LocalPlayer.CharacterAdded:Connect(function()
     task.wait(1)
     if Settings.InvisMode then Settings.InvisMode = false UpdateTexts() end
@@ -832,9 +1115,8 @@ table.insert(Connections, UserInputService.InputBegan:Connect(function(input, gp
     elseif input.KeyCode == GetUserInputTypeOrKeyCode("Spin") or input.UserInputType == GetUserInputTypeOrKeyCode("Spin") then ToggleSpin()
     elseif input.KeyCode == GetUserInputTypeOrKeyCode("WalkSpeedToggle") or input.UserInputType == GetUserInputTypeOrKeyCode("WalkSpeedToggle") then ToggleWalkSpeed()
     elseif input.KeyCode == GetUserInputTypeOrKeyCode("JumpPowerToggle") or input.UserInputType == GetUserInputTypeOrKeyCode("JumpPowerToggle") then ToggleJumpPower()
-    elseif input.KeyCode == GetUserInputTypeOrKeyCode("InvisMode") or input.UserInputType == GetUserInputTypeOrKeyCode("InvisMode") then ToggleInvis() -- UUSI
+    elseif input.KeyCode == GetUserInputTypeOrKeyCode("InvisMode") or input.UserInputType == GetUserInputTypeOrKeyCode("InvisMode") then ToggleInvis()
     end
 end))
 
--- Annetaan työkalu heti käynnistyksessä
 GiveTPTool()
