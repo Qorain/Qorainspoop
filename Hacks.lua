@@ -4,6 +4,13 @@ local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 
+-- Varmistetaan PlayerGui turvallisesti
+local PlayerGui = LocalPlayer:FindFirstChildOfClass("PlayerGui") or LocalPlayer:WaitForChild("PlayerGui", 10)
+if not PlayerGui then
+    warn("PlayerGui ei löytynyt ajoissa!")
+    return
+end
+
 local Settings = {
     TargetPlayer = "",
     Weld = false,
@@ -23,9 +30,14 @@ local Settings = {
     SpinSpeed = 100
 }
 
+-- Poistetaan vanha valikko alta jos se on jo olemassa
+if PlayerGui:FindFirstChild("UltimateSwitchMenu") then
+    PlayerGui.UltimateSwitchMenu:Destroy()
+end
+
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "UltimateSwitchMenu"
-ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+ScreenGui.Parent = PlayerGui
 ScreenGui.ResetOnSpawn = false
 
 -- PÄÄPANEELI (90% läpinäkyvä background)
@@ -272,7 +284,6 @@ end
 CreateNormalButton("TP to Them", function()
     local target = GetTarget()
     if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        -- Teleportataan pelaajan taakse (Z = 3)
         LocalPlayer.Character.HumanoidRootPart.CFrame = target.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, 3)
     end
 end)
@@ -292,7 +303,6 @@ local bangAnimStep = 0
 RunService.Heartbeat:Connect(function()
     local target = GetTarget()
     
-    -- Pelaajakohtaiset komennot (Weld ja Bang) vaativat targetin
     if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
         local myHRP = LocalPlayer.Character.HumanoidRootPart
         local targetHRP = target.Character.HumanoidRootPart
@@ -302,14 +312,11 @@ RunService.Heartbeat:Connect(function()
             myHRP.Velocity = Vector3.new(0, 0, 0)
         elseif Settings.Bang then
             bangAnimStep = bangAnimStep + 0.5
-            -- Lasketaan edestakainen liike (math.sin)
             local bangOffset = math.sin(bangAnimStep) * 0.75
-            -- CFrame.new(0, 0, 1 + bangOffset) pitää sinut pelaajan TAKANA koko ajan
             myHRP.CFrame = targetHRP.CFrame * CFrame.new(0, 0, 1 + bangOffset)
         end
     end
     
-    -- Muut modit (ESP, Noclip, Walkspeed jne.) toimivat itsenäisesti ilman kohdepelaajaa
     if Settings.Noclip and LocalPlayer.Character then
         for _, v in pairs(LocalPlayer.Character:GetDescendants()) do
             if v:IsA("BasePart") then v.CanCollide = false end
