@@ -16,9 +16,8 @@ local Settings = {
     Spin = false,
     WalkSpeedToggle = false,
     JumpPowerToggle = false,
-    TPTool = false,
-    Invisible = false,
     BangActive = false,
+    InvisMode = false, -- UUSI
     FlightSpeed = 50,
     WalkSpeed = 16,
     JumpPower = 50,
@@ -33,8 +32,7 @@ local Settings = {
         Spin = "H",
         WalkSpeedToggle = "J",
         JumpPowerToggle = "K",
-        TPTool = "T",
-        Invisible = "N"
+        InvisMode = "L" -- UUSI
     }
 }
 
@@ -101,7 +99,7 @@ local IsMinimized = false
 local FullSizeY = 530
 local IsAtBottom = false
 local TargetBangPlayer = nil
-local RealCharacterCF = nil
+local InvisClone = nil
 
 -- --- ANTI DISCONNECT / ANTI-AFK SCRIPT ---
 task.spawn(function()
@@ -190,7 +188,7 @@ ScrollFrame.Parent = MainFrame
 ScrollFrame.BackgroundTransparency = 1
 ScrollFrame.Position = UDim2.new(0, 0, 0, 40)
 ScrollFrame.Size = UDim2.new(1, 0, 1, -40)
-ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 1360) -- Nostettu kokoa uusille napeille
+ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 1360) -- Kasvatettu tilaa uusille painikkeille
 ScrollFrame.ScrollBarThickness = 6
 ScrollFrame.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
 
@@ -210,32 +208,32 @@ local FlightBtn = CreateButton("FlightBtn", "", UDim2.new(0, 10, 0, 160), Scroll
 local SpinBtn = CreateButton("SpinBtn", "", UDim2.new(0, 10, 0, 210), ScrollFrame)
 local WalkToggleBtn = CreateButton("WalkToggleBtn", "", UDim2.new(0, 10, 0, 260), ScrollFrame)
 local JumpToggleBtn = CreateButton("JumpToggleBtn", "", UDim2.new(0, 10, 0, 310), ScrollFrame)
-local TPToolBtn = CreateButton("TPToolBtn", "", UDim2.new(0, 10, 0, 360), ScrollFrame, Color3.fromRGB(50, 80, 120))
-local InvisibleBtn = CreateButton("InvisibleBtn", "", UDim2.new(0, 10, 0, 410), ScrollFrame, Color3.fromRGB(100, 60, 110))
+local InvisBtn = CreateButton("InvisBtn", "", UDim2.new(0, 10, 0, 360), ScrollFrame) -- UUSI
+local TPToolBtn = CreateButton("TPToolBtn", "Get TP Tool", UDim2.new(0, 10, 0, 410), ScrollFrame, Color3.fromRGB(40, 90, 90)) -- UUSI
 
--- --- PLAYER INTERACTIONS (Siirretty alemmas uusien nappien tieltä) ---
+-- --- PLAYER INTERACTIONS (Siirretty alemmas jotta uudet mahtuu) ---
 local WeldLabel = Instance.new("TextLabel")
-WeldLabel.Name = "WeldLabel" WeldLabel.Parent = ScrollFrame WeldLabel.Size = UDim2.new(0, 180, 0, 20) WeldLabel.Position = UDim2.new(0, 10, 0, 470)
+WeldLabel.Name = "WeldLabel" WeldLabel.Parent = ScrollFrame WeldLabel.Size = UDim2.new(0, 180, 0, 20) WeldLabel.Position = UDim2.new(0, 10, 0, 465)
 WeldLabel.BackgroundTransparency = 1 WeldLabel.Text = "PLAYER INTERACTIONS" WeldLabel.TextColor3 = Color3.fromRGB(255, 255, 255) WeldLabel.TextSize = 12 WeldLabel.Font = Enum.Font.SourceSansBold
 
 local WeldTextBox = Instance.new("TextBox")
-WeldTextBox.Name = "WeldTextBox" WeldTextBox.Parent = ScrollFrame WeldTextBox.Size = UDim2.new(0, 180, 0, 30) WeldTextBox.Position = UDim2.new(0, 10, 0, 495)
+WeldTextBox.Name = "WeldTextBox" WeldTextBox.Parent = ScrollFrame WeldTextBox.Size = UDim2.new(0, 180, 0, 30) WeldTextBox.Position = UDim2.new(0, 10, 0, 490)
 WeldTextBox.BackgroundColor3 = Color3.fromRGB(45, 45, 45) WeldTextBox.BackgroundTransparency = 0.1 WeldTextBox.Text = "" WeldTextBox.PlaceholderText = "Username..."
 WeldTextBox.TextColor3 = Color3.fromRGB(255, 255, 255) WeldTextBox.TextSize = 14
 
-local WeldBtn = CreateButton("WeldBtn", "Weld to Me", UDim2.new(0, 10, 0, 530), ScrollFrame, Color3.fromRGB(40, 100, 40))
-local BangBtn = CreateButton("BangBtn", "Bang Player", UDim2.new(0, 10, 0, 575), ScrollFrame, Color3.fromRGB(110, 80, 30))
-local TPToMeBtn = CreateButton("TPToMeBtn", "TP to Me", UDim2.new(0, 10, 0, 620), ScrollFrame, Color3.fromRGB(40, 80, 110))
-local TPToThemBtn = CreateButton("TPToThemBtn", "TP to Them", UDim2.new(0, 10, 0, 665), ScrollFrame, Color3.fromRGB(90, 40, 110))
-local UnweldBtn = CreateButton("UnweldBtn", "Stop Weld / Bang", UDim2.new(0, 10, 0, 710), ScrollFrame, Color3.fromRGB(100, 40, 40))
+local WeldBtn = CreateButton("WeldBtn", "Weld to Me", UDim2.new(0, 10, 0, 525), ScrollFrame, Color3.fromRGB(40, 100, 40))
+local BangBtn = CreateButton("BangBtn", "Bang Player", UDim2.new(0, 10, 0, 570), ScrollFrame, Color3.fromRGB(110, 80, 30))
+local TPToMeBtn = CreateButton("TPToMeBtn", "TP to Me", UDim2.new(0, 10, 0, 615), ScrollFrame, Color3.fromRGB(40, 80, 110))
+local TPToThemBtn = CreateButton("TPToThemBtn", "TP to Them", UDim2.new(0, 10, 0, 660), ScrollFrame, Color3.fromRGB(90, 40, 110))
+local UnweldBtn = CreateButton("UnweldBtn", "Stop Weld / Bang", UDim2.new(0, 10, 0, 705), ScrollFrame, Color3.fromRGB(100, 40, 40))
 
--- --- SLIDERIT ---
+-- --- SLIDERIT (Siirretty alemmas) ---
 local SliderFrame = Instance.new("Frame")
 local SliderBar = Instance.new("Frame")
 local SliderDot = Instance.new("TextButton")
 local SliderValueLabel = Instance.new("TextLabel")
 
-SliderFrame.Parent = ScrollFrame SliderFrame.Size = UDim2.new(0, 180, 0, 50) SliderFrame.Position = UDim2.new(0, 10, 0, 770) SliderFrame.BackgroundTransparency = 1
+SliderFrame.Parent = ScrollFrame SliderFrame.Size = UDim2.new(0, 180, 0, 50) SliderFrame.Position = UDim2.new(0, 10, 0, 760) SliderFrame.BackgroundTransparency = 1
 SliderValueLabel.Parent = SliderFrame SliderValueLabel.Size = UDim2.new(1, 0, 0, 20) SliderValueLabel.BackgroundTransparency = 1 SliderValueLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 SliderBar.Parent = SliderFrame SliderBar.Size = UDim2.new(1, 0, 0, 6) SliderBar.Position = UDim2.new(0, 0, 0, 25) SliderBar.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
 SliderDot.Parent = SliderBar SliderDot.Size = UDim2.new(0, 16, 0, 16) SliderDot.BackgroundColor3 = Color3.fromRGB(200, 200, 200) SliderDot.Text = ""
@@ -262,7 +260,7 @@ local WSliderBar = Instance.new("Frame")
 local WSliderDot = Instance.new("TextButton")
 local WSliderValueLabel = Instance.new("TextLabel")
 
-WSliderFrame.Parent = ScrollFrame WSliderFrame.Size = UDim2.new(0, 180, 0, 50) WSliderFrame.Position = UDim2.new(0, 10, 0, 825) WSliderFrame.BackgroundTransparency = 1
+WSliderFrame.Parent = ScrollFrame WSliderFrame.Size = UDim2.new(0, 180, 0, 50) WSliderFrame.Position = UDim2.new(0, 10, 0, 815) WSliderFrame.BackgroundTransparency = 1
 WSliderValueLabel.Parent = WSliderFrame WSliderValueLabel.Size = UDim2.new(1, 0, 0, 20) WSliderValueLabel.BackgroundTransparency = 1 WSliderValueLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 WSliderBar.Parent = WSliderFrame WSliderBar.Size = UDim2.new(1, 0, 0, 6) WSliderBar.Position = UDim2.new(0, 0, 0, 25) WSliderBar.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
 WSliderDot.Parent = WSliderBar WSliderDot.Size = UDim2.new(0, 16, 0, 16) WSliderDot.BackgroundColor3 = Color3.fromRGB(150, 200, 255) WSliderDot.Text = ""
@@ -289,7 +287,7 @@ local JSliderBar = Instance.new("Frame")
 local JSliderDot = Instance.new("TextButton")
 local JSliderValueLabel = Instance.new("TextLabel")
 
-JSliderFrame.Parent = ScrollFrame JSliderFrame.Size = UDim2.new(0, 180, 0, 50) JSliderFrame.Position = UDim2.new(0, 10, 0, 880) JSliderFrame.BackgroundTransparency = 1
+JSliderFrame.Parent = ScrollFrame JSliderFrame.Size = UDim2.new(0, 180, 0, 50) JSliderFrame.Position = UDim2.new(0, 10, 0, 870) JSliderFrame.BackgroundTransparency = 1
 JSliderValueLabel.Parent = JSliderFrame JSliderValueLabel.Size = UDim2.new(1, 0, 0, 20) JSliderValueLabel.BackgroundTransparency = 1 JSliderValueLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 JSliderBar.Parent = JSliderFrame JSliderBar.Size = UDim2.new(1, 0, 0, 6) JSliderBar.Position = UDim2.new(0, 0, 0, 25) JSliderBar.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
 JSliderDot.Parent = JSliderBar JSliderDot.Size = UDim2.new(0, 16, 0, 16) JSliderDot.BackgroundColor3 = Color3.fromRGB(255, 200, 150) JSliderDot.Text = ""
@@ -316,7 +314,7 @@ local BangSliderBar = Instance.new("Frame")
 local BangSliderDot = Instance.new("TextButton")
 local BangSliderValueLabel = Instance.new("TextLabel")
 
-BangSliderFrame.Parent = ScrollFrame BangSliderFrame.Size = UDim2.new(0, 180, 0, 50) BangSliderFrame.Position = UDim2.new(0, 10, 0, 935) BangSliderFrame.BackgroundTransparency = 1
+BangSliderFrame.Parent = ScrollFrame BangSliderFrame.Size = UDim2.new(0, 180, 0, 50) BangSliderFrame.Position = UDim2.new(0, 10, 0, 925) BangSliderFrame.BackgroundTransparency = 1
 BangSliderValueLabel.Parent = BangSliderFrame BangSliderValueLabel.Size = UDim2.new(1, 0, 0, 20) BangSliderValueLabel.BackgroundTransparency = 1 BangSliderValueLabel.TextColor3 = Color3.fromRGB(240, 180, 80)
 BangSliderBar.Parent = BangSliderFrame BangSliderBar.Size = UDim2.new(1, 0, 0, 6) BangSliderBar.Position = UDim2.new(0, 0, 0, 25) BangSliderBar.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
 BangSliderDot.Parent = BangSliderBar BangSliderDot.Size = UDim2.new(0, 16, 0, 16) BangSliderDot.BackgroundColor3 = Color3.fromRGB(240, 180, 80) BangSliderDot.Text = ""
@@ -343,7 +341,7 @@ local SSliderBar = Instance.new("Frame")
 local SSliderDot = Instance.new("TextButton")
 local SSliderValueLabel = Instance.new("TextLabel")
 
-SSliderFrame.Parent = ScrollFrame SSliderFrame.Size = UDim2.new(0, 180, 0, 50) SSliderFrame.Position = UDim2.new(0, 10, 0, 990) SSliderFrame.BackgroundTransparency = 1
+SSliderFrame.Parent = ScrollFrame SSliderFrame.Size = UDim2.new(0, 180, 0, 50) SSliderFrame.Position = UDim2.new(0, 10, 0, 980) SSliderFrame.BackgroundTransparency = 1
 SSliderValueLabel.Parent = SSliderFrame SSliderValueLabel.Size = UDim2.new(1, 0, 0, 20) SSliderValueLabel.BackgroundTransparency = 1 SSliderValueLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 SSliderBar.Parent = SSliderFrame SSliderBar.Size = UDim2.new(1, 0, 0, 6) SSliderBar.Position = UDim2.new(0, 0, 0, 25) SSliderBar.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
 SSliderDot.Parent = SSliderBar SSliderDot.Size = UDim2.new(0, 16, 0, 16) SSliderDot.BackgroundColor3 = Color3.fromRGB(200, 150, 255) SSliderDot.Text = ""
@@ -374,7 +372,7 @@ local SizeSliderBar = Instance.new("Frame")
 local SizeSliderDot = Instance.new("TextButton")
 local SizeSliderValueLabel = Instance.new("TextLabel")
 
-SizeSliderFrame.Parent = ScrollFrame SizeSliderFrame.Size = UDim2.new(0, 180, 0, 50) SizeSliderFrame.Position = UDim2.new(0, 10, 0, 1045) SizeSliderFrame.BackgroundTransparency = 1
+SizeSliderFrame.Parent = ScrollFrame SizeSliderFrame.Size = UDim2.new(0, 180, 0, 50) SizeSliderFrame.Position = UDim2.new(0, 10, 0, 1035) SizeSliderFrame.BackgroundTransparency = 1
 SizeSliderValueLabel.Parent = SizeSliderFrame SizeSliderValueLabel.Size = UDim2.new(1, 0, 0, 20) SizeSliderValueLabel.BackgroundTransparency = 1 SizeSliderValueLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 SizeSliderBar.Parent = SizeSliderFrame SizeSliderBar.Size = UDim2.new(1, 0, 0, 6) SizeSliderBar.Position = UDim2.new(0, 0, 0, 25) SizeSliderBar.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
 SizeSliderDot.Parent = SizeSliderBar SizeSliderDot.Size = UDim2.new(0, 16, 0, 16) SizeSliderDot.BackgroundColor3 = Color3.fromRGB(150, 255, 150) SizeSliderDot.Text = ""
@@ -416,19 +414,19 @@ UserInputService.InputChanged:Connect(function(input) if sizeDragging and input.
 
 -- --- LASKIN (CALCULATOR) ---
 local CalcLabel = Instance.new("TextLabel")
-CalcLabel.Name = "CalcLabel" CalcLabel.Parent = ScrollFrame CalcLabel.Size = UDim2.new(0, 180, 0, 20) CalcLabel.Position = UDim2.new(0, 10, 0, 1105)
+CalcLabel.Name = "CalcLabel" CalcLabel.Parent = ScrollFrame CalcLabel.Size = UDim2.new(0, 180, 0, 20) CalcLabel.Position = UDim2.new(0, 10, 0, 1095)
 CalcLabel.BackgroundTransparency = 1 CalcLabel.Text = "CALCULATOR" CalcLabel.TextColor3 = Color3.fromRGB(255, 255, 255) CalcLabel.TextSize = 12 CalcLabel.Font = Enum.Font.SourceSansBold
 
 local CalcTextBox = Instance.new("TextBox")
-CalcTextBox.Name = "CalcTextBox" CalcTextBox.Parent = ScrollFrame CalcTextBox.Size = UDim2.new(0, 180, 0, 30) CalcTextBox.Position = UDim2.new(0, 10, 0, 1130)
+CalcTextBox.Name = "CalcTextBox" CalcTextBox.Parent = ScrollFrame CalcTextBox.Size = UDim2.new(0, 180, 0, 30) CalcTextBox.Position = UDim2.new(0, 10, 0, 1120)
 CalcTextBox.BackgroundColor3 = Color3.fromRGB(45, 45, 45) CalcTextBox.BackgroundTransparency = 0.1 CalcTextBox.Text = "" CalcTextBox.PlaceholderText = "e.g. 50 * 2.5"
 CalcTextBox.TextColor3 = Color3.fromRGB(255, 255, 255) CalcTextBox.TextSize = 14
 
 local CalcResultLabel = Instance.new("TextLabel")
-CalcResultLabel.Name = "CalcResultLabel" CalcResultLabel.Parent = ScrollFrame CalcResultLabel.Size = UDim2.new(0, 180, 0, 25) CalcResultLabel.Position = UDim2.new(0, 10, 0, 1165)
+CalcResultLabel.Name = "CalcResultLabel" CalcResultLabel.Parent = ScrollFrame CalcResultLabel.Size = UDim2.new(0, 180, 0, 25) CalcResultLabel.Position = UDim2.new(0, 10, 0, 1155)
 CalcResultLabel.BackgroundColor3 = Color3.fromRGB(25, 25, 25) CalcResultLabel.BackgroundTransparency = 0.3 CalcResultLabel.Text = "Result: -" CalcResultLabel.TextColor3 = Color3.fromRGB(150, 255, 150) CalcResultLabel.TextSize = 13
 
-local CalcBtn = CreateButton("CalcBtn", "Calculate", UDim2.new(0, 10, 0, 1195), ScrollFrame, Color3.fromRGB(60, 80, 90))
+local CalcBtn = CreateButton("CalcBtn", "Calculate", UDim2.new(0, 10, 0, 1185), ScrollFrame, Color3.fromRGB(60, 80, 90))
 
 local function SafeCalculate(expression)
     local cleaned = string.gsub(expression, "[^%d%.%+%-%*%/%^%(%)]", "")
@@ -454,8 +452,8 @@ end)
 
 
 -- Pohjapainikkeet
-local DisableAllBtn = CreateButton("DisableAllBtn", "Disable All", UDim2.new(0, 10, 0, 1250), ScrollFrame, Color3.fromRGB(120, 40, 40))
-local ShutDownBtn = CreateButton("ShutDownBtn", "Shut Down GUI", UDim2.new(0, 10, 0, 1300), ScrollFrame, Color3.fromRGB(45, 45, 45))
+local DisableAllBtn = CreateButton("DisableAllBtn", "Disable All", UDim2.new(0, 10, 0, 1240), ScrollFrame, Color3.fromRGB(120, 40, 40))
+local ShutDownBtn = CreateButton("ShutDownBtn", "Shut Down GUI", UDim2.new(0, 10, 0, 1290), ScrollFrame, Color3.fromRGB(45, 45, 45))
 
 local function UpdateTexts()
     if not IsRunning then return end 
@@ -466,8 +464,7 @@ local function UpdateTexts()
     SpinBtn.Text = "Spinbot: " .. (Settings.Spin and "ON" or "OFF") .. " (" .. Settings.Binds.Spin .. ")"
     WalkToggleBtn.Text = "WalkSpeed: " .. (Settings.WalkSpeedToggle and "ON" or "OFF") .. " (" .. Settings.Binds.WalkSpeedToggle .. ")"
     JumpToggleBtn.Text = "JumpPower: " .. (Settings.JumpPowerToggle and "ON" or "OFF") .. " (" .. Settings.Binds.JumpPowerToggle .. ")"
-    TPToolBtn.Text = "TP Tool: " .. (Settings.TPTool and "ON" or "OFF") .. " (" .. Settings.Binds.TPTool .. ")"
-    InvisibleBtn.Text = "Invisibility: " .. (Settings.Invisible and "ON" or "OFF") .. " (" .. Settings.Binds.Invisible .. ")"
+    InvisBtn.Text = "Invis Mode: " .. (Settings.InvisMode and "ON" or "OFF") .. " (" .. Settings.Binds.InvisMode .. ")"
 end
 UpdateTexts()
 
@@ -493,6 +490,58 @@ local function GetPlayerByString(text)
         end
     end
     return nil
+end
+
+-- --- TP TOOL FUNKTIO ---
+local function GiveTPTool()
+    local tool = Instance.new("Tool")
+    tool.Name = "Teleport Tool"
+    tool.RequiresHandle = false
+    
+    tool.Activated:Connect(function()
+        local mouse = LocalPlayer:GetMouse()
+        if mouse and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(mouse.Hit.Position + Vector3.new(0, 3, 0))
+        end
+    end)
+    
+    tool.Parent = LocalPlayer:WaitForChild("Backpack")
+end
+TPToolBtn.MouseButton1Click:Connect(GiveTPTool)
+
+-- --- INVIS MODE FUNKTIO ---
+local function ToggleInvis()
+    Settings.InvisMode = not Settings.InvisMode
+    UpdateTexts()
+    
+    local char = LocalPlayer.Character
+    if not char then return end
+    
+    if Settings.InvisMode then
+        -- Tehdään hahmo näkymättömäksi muille tuhoamalla sen renderöitävät osat paikallisesti
+        char:MoveTo(Vector3.new(char.PrimaryPart.Position.X, char.PrimaryPart.Position.Y + 99999, char.PrimaryPart.Position.Z))
+        task.wait(0.2)
+        local hrp = char:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            InvisClone = hrp:Clone()
+            InvisClone.Name = "InvisRoot"
+            InvisClone.Transparency = 0.5
+            InvisClone.Anchored = true
+            InvisClone.Parent = workspace
+            
+            for _, v in pairs(char:GetDescendants()) do
+                if v:IsA("BasePart") and v.Name ~= "HumanoidRootPart" then
+                    v.Transparency = 1
+                elseif v:IsA("Decal") then
+                    v.Transparency = 1
+                end
+            end
+        end
+    else
+        -- Palautetaan normaaliksi
+        if InvisClone then InvisClone:Destroy() InvisClone = nil end
+        LocalPlayer:LoadCharacter() -- Turvallisin tapa palauttaa hahmo ennalleen bugien välttämiseksi
+    end
 end
 
 local function WeldToMe()
@@ -663,56 +712,6 @@ local function ToggleJumpPower()
     UpdateTexts()
 end
 
-local function ToggleTPTool()
-    Settings.TPTool = not Settings.TPTool
-    UpdateTexts()
-end
-
--- INVISIBILITY MODE LOGIIKKA
-local function ToggleInvisibility()
-    Settings.Invisible = not Settings.Invisible
-    UpdateTexts()
-    
-    local player = LocalPlayer
-    local character = player.Character
-    if not character then return end
-    
-    if Settings.Invisible then
-        -- Tallennetaan sijainti ja poistetaan näkyvät osat paikallisesti
-        local humanoid = character:FindFirstChildOfClass("Humanoid")
-        local hrp = character:FindFirstChild("HumanoidRootPart")
-        if hrp and humanoid then
-            RealCharacterCF = hrp.CFrame
-            local clone = Instance.new("Model")
-            clone.Name = "InvisibleClone"
-            
-            -- Tuhoaa näkyvyysosat muilta (perustuu tunnettuun Torso-katkaisuun)
-            local torso = character:FindFirstChild("LowerTorso") or character:FindFirstChild("Torso")
-            if torso then
-                torso:Destroy()
-            end
-        end
-    else
-        -- Palataan normaaliksi lataamalla hahmo uudelleen (vaatii resetin poistuakseen pelimoottorin rajoitusten takia)
-        if player.Character then
-            local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
-            if humanoid then humanoid.Health = 0 end
-        end
-    end
-end
-
--- Klikkaus-teleportin kuuntelija hiirelle [source: 1]
-local Mouse = LocalPlayer:GetMouse()
-Mouse.Button1Down:Connect(function()
-    if Settings.TPTool and IsRunning then
-        local character = LocalPlayer.Character
-        local hrp = character and character:FindFirstChild("HumanoidRootPart")
-        if hrp and Mouse.Hit then
-            hrp.CFrame = CFrame.new(Mouse.Hit.Position + Vector3.new(0, 3, 0))
-        end
-    end
-end)
-
 -- Liitetään GUI-painikkeet funktioihin
 ESPBtn.MouseButton1Click:Connect(ToggleESP)
 NoclipBtn.MouseButton1Click:Connect(ToggleNoclip)
@@ -721,8 +720,7 @@ FlightBtn.MouseButton1Click:Connect(ToggleFlight)
 SpinBtn.MouseButton1Click:Connect(ToggleSpin)
 WalkToggleBtn.MouseButton1Click:Connect(ToggleWalkSpeed)
 JumpToggleBtn.MouseButton1Click:Connect(ToggleJumpPower)
-TPToolBtn.MouseButton1Click:Connect(ToggleTPTool)
-InvisibleBtn.MouseButton1Click:Connect(ToggleInvisibility)
+InvisBtn.MouseButton1Click:Connect(ToggleInvis) -- UUSI
 
 WeldBtn.MouseButton1Click:Connect(WeldToMe)
 BangBtn.MouseButton1Click:Connect(BangPlayer)
@@ -733,8 +731,8 @@ UnweldBtn.MouseButton1Click:Connect(UnweldPlayer)
 DisableAllBtn.MouseButton1Click:Connect(function()
     Settings.ESP = false Settings.Noclip = false Settings.Aimbot = false
     Settings.Flight = false Settings.Spin = false Settings.WalkSpeedToggle = false
-    Settings.JumpPowerToggle = false Settings.TPTool = false
-    if Settings.Invisible then ToggleInvisibility() end
+    Settings.JumpPowerToggle = false Settings.InvisMode = false
+    if InvisClone then InvisClone:Destroy() InvisClone = nil end
     UnweldPlayer() RemoveSpin() UpdateTexts()
     for _, p in pairs(Players:GetPlayers()) do
         if p.Character then local hl = p.Character:FindFirstChild("OG_Menu_ESP") if hl then hl:Destroy() end end
@@ -744,6 +742,7 @@ end)
 ShutDownBtn.MouseButton1Click:Connect(function()
     IsRunning = false
     RemoveSpin() UnweldPlayer()
+    if InvisClone then InvisClone:Destroy() InvisClone = nil end
     for _, c in pairs(Connections) do c:Disconnect() end
     ScreenGui:Destroy()
 end)
@@ -755,11 +754,16 @@ table.insert(Connections, RunService.Stepped:Connect(function()
     local humanoid = char and char:FindFirstChildOfClass("Humanoid")
     local hrp = char and char:FindFirstChild("HumanoidRootPart")
     
+    -- INVIS MODE LOGIIKKA (Pitää fake rootin oikeassa kohdassa)
+    if Settings.InvisMode and hrp and InvisClone then
+        InvisClone.CFrame = hrp.CFrame
+    end
+    
     -- NOCLIP-KORJAUS
     if char then
         for _, part in pairs(char:GetDescendants()) do
             if part:IsA("BasePart") then
-                if Settings.Noclip then
+                if Settings.Noclip or Settings.InvisMode then
                     part.CanCollide = false
                 else
                     if part.Name ~= "HumanoidRootPart" then
@@ -768,7 +772,7 @@ table.insert(Connections, RunService.Stepped:Connect(function()
                 end
             end
         end
-        if not Settings.Noclip and humanoid then
+        if not Settings.Noclip and not Settings.InvisMode and humanoid then
             if humanoid:GetState() ~= Enum.HumanoidStateType.Running and humanoid:GetState() ~= Enum.HumanoidStateType.Dead then
                 humanoid:ChangeState(Enum.HumanoidStateType.Running)
             end
@@ -804,7 +808,13 @@ table.insert(Connections, RunService.Stepped:Connect(function()
     end
 end))
 
--- SEURATAAN UUSIA PELAAJIA ESP-VARTEN
+-- SEURATAAN UUSIA PELAAJIA ESP-VARTEN JA ANNETAAN TP TOOL SPAWNATESSA
+LocalPlayer.CharacterAdded:Connect(function()
+    task.wait(1)
+    if Settings.InvisMode then Settings.InvisMode = false UpdateTexts() end
+    GiveTPTool()
+end)
+
 Players.PlayerAdded:Connect(function(p)
     p.CharacterAdded:Connect(function(c)
         task.wait(0.5)
@@ -822,7 +832,9 @@ table.insert(Connections, UserInputService.InputBegan:Connect(function(input, gp
     elseif input.KeyCode == GetUserInputTypeOrKeyCode("Spin") or input.UserInputType == GetUserInputTypeOrKeyCode("Spin") then ToggleSpin()
     elseif input.KeyCode == GetUserInputTypeOrKeyCode("WalkSpeedToggle") or input.UserInputType == GetUserInputTypeOrKeyCode("WalkSpeedToggle") then ToggleWalkSpeed()
     elseif input.KeyCode == GetUserInputTypeOrKeyCode("JumpPowerToggle") or input.UserInputType == GetUserInputTypeOrKeyCode("JumpPowerToggle") then ToggleJumpPower()
-    elseif input.KeyCode == GetUserInputTypeOrKeyCode("TPTool") or input.UserInputType == GetUserInputTypeOrKeyCode("TPTool") then ToggleTPTool()
-    elseif input.KeyCode == GetUserInputTypeOrKeyCode("Invisible") or input.UserInputType == GetUserInputTypeOrKeyCode("Invisible") then ToggleInvisibility()
+    elseif input.KeyCode == GetUserInputTypeOrKeyCode("InvisMode") or input.UserInputType == GetUserInputTypeOrKeyCode("InvisMode") then ToggleInvis() -- UUSI
     end
 end))
+
+-- Annetaan työkalu heti käynnistyksessä
+GiveTPTool()
