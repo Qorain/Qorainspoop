@@ -6,7 +6,6 @@ local TweenService = game:GetService("TweenService")
 
 local Settings = {
     TargetPlayer = "",
-    TP = false,
     Weld = false,
     Bang = false,
     ESP = false,
@@ -91,7 +90,7 @@ Title.Font = Enum.Font.SourceSansBold
 Title.TextXAlignment = Enum.TextXAlignment.Left
 Title.Parent = MainFrame
 
--- Taulukko kytkimien päivitysfunktioille, jotta ne voidaan resetoida ulkopuolelta
+-- Taulukko kytkimien päivitysfunktioille
 local ToggleRegistry = {}
 
 -- FUNKTIO KAIKEN RESETOIMISELLE JA SAMMUTTAMISELLE
@@ -100,8 +99,6 @@ local function DisableAndResetAll()
     local NameBox = ScrollFrame:FindFirstChildOfClass("TextBox")
     if NameBox then NameBox.Text = "" end
     
-    -- Tyhjennetään kohdepelaajan lukitus välittömästi
-    Settings.TP = false
     Settings.Weld = false
     Settings.Bang = false
     Settings.ESP = false
@@ -112,26 +109,24 @@ local function DisableAndResetAll()
     Settings.WalkSpeedToggle = false
     Settings.JumpPowerToggle = false
     
-    -- Käännetään kaikki visuaaliset kytkimet OFF-asentoon animaatiolla
     for _, resetFunc in pairs(ToggleRegistry) do
         resetFunc()
     end
     
-    -- Palautetaan hahmon fysiikat välittömästi normaaleiksi
     local character = LocalPlayer.Character
     if character then
         local hum = character:FindFirstChildOfClass("Humanoid")
         if hum then
             hum.WalkSpeed = 16
             hum.JumpPower = 50
-         Museum = character:GetDescendants()
+        end
         for _, part in pairs(character:GetDescendants()) do
             if part:IsA("BasePart") then part.CanCollide = true end
         end
     end
 end
 
--- RASTIN KLIKKAUS (Sammuttaa kaiken ja tuhoaa UI:n)
+-- RASTIN KLIKKAUS
 CloseButton.MouseButton1Click:Connect(function()
     DisableAndResetAll()
     ScreenGui:Destroy()
@@ -176,6 +171,37 @@ BoxCorner.Parent = NameBox
 NameBox:GetPropertyChangedSignal("Text"):Connect(function()
     Settings.TargetPlayer = NameBox.Text
 end)
+
+-- Apufunktio kohdepelaajan löytämiseen nimen perusteella
+local function GetTarget()
+    if Settings.TargetPlayer == "" then return nil end
+    for _, p in pairs(Players:GetPlayers()) do
+        if p ~= LocalPlayer and string.lower(p.Name):sub(1, #Settings.TargetPlayer) == string.lower(Settings.TargetPlayer) then
+            return p
+        end
+    end
+    return nil
+end
+
+-- NORMAALI PAINIKE LUONTI (TP to Them, 75% läpinäkyvä)
+local function CreateNormalButton(name, callback)
+    local Button = Instance.new("TextButton")
+    Button.Size = UDim2.new(0, 230, 0, 40)
+    Button.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    Button.BackgroundTransparency = 0.75
+    Button.BorderSizePixel = 0
+    Button.Text = name
+    Button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Button.Font = Enum.Font.SourceSansBold
+    Button.TextSize = 13
+    Button.Parent = ScrollFrame
+
+    local Corner = Instance.new("UICorner")
+    Corner.CornerRadius = UDim.new(0, 6)
+    Corner.Parent = Button
+
+    Button.MouseButton1Click:Connect(callback)
+end
 
 -- FUNKTIO LIUKUKYTKIMEN LUOMISELLE (75% läpinäkyvät napit)
 local function CreateToggle(name, settingKey)
@@ -227,7 +253,6 @@ local function CreateToggle(name, settingKey)
     ClickBtn.Text = ""
     ClickBtn.Parent = ButtonFrame
 
-    -- Rekisteröidään ulkoinen resetointifunktio tälle kytkimelle
     ToggleRegistry[settingKey] = function()
         TweenService:Create(Dot, TweenInfo.new(0.15), {Position = UDim2.new(0, 2, 0.5, -7)}):Play()
         TweenService:Create(SwitchBg, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(80, 80, 80)}):Play()
@@ -243,19 +268,15 @@ local function CreateToggle(name, settingKey)
     end)
 end
 
--- Apufunktio kohdepelaajan löytämiseen nimen perusteella
-local function GetTarget()
-    if Settings.TargetPlayer == "" then return nil end
-    for _, p in pairs(Players:GetPlayers()) do
-        if p ~= LocalPlayer and string.lower(p.Name):sub(1, #Settings.TargetPlayer) == string.lower(Settings.TargetPlayer) then
-            return p
-        end
+-- LUODAAN NAPIT JÄRJESTYKSESSÄ
+CreateNormalButton("TP to Them", function()
+    local target = GetTarget()
+    if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        -- Teleportataan pelaajan taakse (Z = 3)
+        LocalPlayer.Character.HumanoidRootPart.CFrame = target.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, 3)
     end
-    return nil
-end
+end)
 
--- LUODAAN KAIKKI LIUKUKYTKIMET JÄRJESTYKSESSÄ
-CreateToggle("TP to Them", "TP")
 CreateToggle("Weld to Them", "Weld")
 CreateToggle("Bang to Them", "Bang")
 CreateToggle("ESP", "ESP")
@@ -266,26 +287,29 @@ CreateToggle("Spinbot", "Spin")
 CreateToggle("WalkSpeed", "WalkSpeedToggle")
 CreateToggle("JumpPower", "JumpPowerToggle")
 
--- DO-LOOP (Jatkuva logiikka)
+-- JATKUVA LOGIIKKALOOPPI
 local bangAnimStep = 0
 RunService.Heartbeat:Connect(function()
     local target = GetTarget()
+    
+    -- Pelaajakohtaiset komennot (Weld ja Bang) vaativat targetin
     if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
         local myHRP = LocalPlayer.Character.HumanoidRootPart
         local targetHRP = target.Character.HumanoidRootPart
         
-        if Settings.TP then
-            myHRP.CFrame = targetHRP.CFrame * CFrame.new(0, 0, 3)
-        elseif Settings.Weld then
+        if Settings.Weld then
             myHRP.CFrame = targetHRP.CFrame * CFrame.new(0, 0, 0.5)
             myHRP.Velocity = Vector3.new(0, 0, 0)
         elseif Settings.Bang then
             bangAnimStep = bangAnimStep + 0.5
+            -- Lasketaan edestakainen liike (math.sin)
             local bangOffset = math.sin(bangAnimStep) * 0.75
+            -- CFrame.new(0, 0, 1 + bangOffset) pitää sinut pelaajan TAKANA koko ajan
             myHRP.CFrame = targetHRP.CFrame * CFrame.new(0, 0, 1 + bangOffset)
         end
     end
     
+    -- Muut modit (ESP, Noclip, Walkspeed jne.) toimivat itsenäisesti ilman kohdepelaajaa
     if Settings.Noclip and LocalPlayer.Character then
         for _, v in pairs(LocalPlayer.Character:GetDescendants()) do
             if v:IsA("BasePart") then v.CanCollide = false end
