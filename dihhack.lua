@@ -1,5 +1,5 @@
 -- ========================================================
---               ORAVACLIENT V7.5 - EXPANDED                
+--          ORAVACLIENT V7.5 - FIXED & WORKING             
 -- ========================================================
 
 local Players = game:GetService("Players")
@@ -31,6 +31,7 @@ MainFrame.BackgroundColor3 = Color3.fromRGB(14, 14, 18)
 MainFrame.BorderSizePixel = 0
 MainFrame.Active = true
 MainFrame.Draggable = true
+MainFrame.Visible = true -- Force visible on execute
 MainFrame.Parent = ScreenGui
 
 local UICorner = Instance.new("UICorner")
@@ -271,9 +272,9 @@ local function AddButton(page, text, callback)
     btn.MouseButton1Click:Connect(function() callback(btn) end)
 end
 
--- Keybind Toggle
+-- Keybind Toggle (Right Control or Right Shift)
 UserInputService.InputBegan:Connect(function(input, gpe)
-    if not gpe and input.KeyCode == Enum.KeyCode.RightControl then
+    if not gpe and (input.KeyCode == Enum.KeyCode.RightControl or input.KeyCode == Enum.KeyCode.RightShift) then
         MainFrame.Visible = not MainFrame.Visible
     end
 end)
@@ -505,15 +506,19 @@ AddButton(CameraPage, "[37] Invert Camera Pitch", function() workspace.CurrentCa
 AddToggle(WorldPage, "[38] Zero Gravity Engine", function(state) workspace.Gravity = state and 0 or 196.2 end)
 AddToggle(WorldPage, "[39] Low Moon Gravity (50)", function(state) workspace.Gravity = state and 50 or 196.2 end)
 AddToggle(WorldPage, "[40] Heavy Physics Gravity (400)", function(state) workspace.Gravity = state and 400 or 196.2 end)
+
 local spin = false
-AddToggle(WorldPage, "[41] Spinbot Motion Module", function(state)
+AddToggle(WorldPage, "[41] Spinbot Motion Engine", function(state)
     spin = state
-    while spin do
-        local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+end)
+
+RunService.RenderStepped:Connect(function()
+    if spin and LocalPlayer.Character then
+        local hrp = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
         if hrp then hrp.CFrame = hrp.CFrame * CFrame.Angles(0, math.rad(25), 0) end
-        task.wait(0.03)
     end
 end)
+
 AddButton(WorldPage, "[42] Forward Thrust Impulse", function()
     local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
     if hrp then hrp.AssemblyLinearVelocity = hrp.CFrame.LookVector * 150 end
@@ -650,4 +655,4 @@ AddButton(CustomizerPage, "🌸 10. Rose Gold", function()
     ApplyThemePreset(Color3.fromRGB(24, 16, 20), Color3.fromRGB(32, 20, 26), Color3.fromRGB(40, 24, 32), Color3.fromRGB(255, 120, 170), Color3.fromRGB(255, 230, 240), Enum.Font.GothamMedium)
 end)
 
-print("OravaClient v7.5 loaded with Shutdown Button, 10 Themes, and 51 Features!")
+print("OravaClient v7.5 Fixed & Working!")
